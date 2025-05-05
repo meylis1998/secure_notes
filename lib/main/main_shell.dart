@@ -5,19 +5,14 @@ import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 
 import '../app/theme/app_theme.dart';
 
-class MainShell extends StatefulWidget {
+class MainShell extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
   const MainShell({super.key, required this.navigationShell});
 
-  @override
-  State<MainShell> createState() => _MainShellState();
-}
-
-class _MainShellState extends State<MainShell> {
   void _onTabTapped(BuildContext context, int index) {
-    widget.navigationShell.goBranch(
+    navigationShell.goBranch(
       index,
-      initialLocation: index == widget.navigationShell.currentIndex,
+      initialLocation: index == navigationShell.currentIndex,
     );
   }
 
@@ -25,9 +20,9 @@ class _MainShellState extends State<MainShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.white,
-      body: widget.navigationShell,
+      body: navigationShell,
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: widget.navigationShell.currentIndex,
+        currentIndex: navigationShell.currentIndex,
         onTap: (index) => _onTabTapped(context, index),
         items: [
           BottomNavigationBarItem(
@@ -40,13 +35,13 @@ class _MainShellState extends State<MainShell> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(LineAwesomeIcons.bookmark, size: 25.sp),
+            icon: Icon(Icons.note_outlined, size: 25.sp),
             activeIcon: Icon(
-              Icons.bookmark,
+              Icons.note,
               color: AppTheme.mainColor,
               size: 25.sp,
             ),
-            label: 'Bookmarks',
+            label: 'Local Notes',
           ),
         ],
       ),

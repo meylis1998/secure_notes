@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../bookmarks/bookmarks.dart';
 import '../../../home/view/home_view.dart';
+import '../../../local/local_notes.dart';
 import '../../../main/main_shell.dart';
 import '../../../splash/splash_view.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _homeTabNavKey = GlobalKey<NavigatorState>();
-final _bookmarksTabNavKey = GlobalKey<NavigatorState>();
+final _localTabNavKey = GlobalKey<NavigatorState>();
 
 class AppRoutes {
   // Top-level routes
   static const initial = '/';
   // Bottom Navigation routes
   static const home = '/home';
-  static const bookmarks = '/bookmarks';
+  static const local = '/local';
 
   static final GoRoute splashRoute = GoRoute(
     path: initial,
@@ -27,9 +27,9 @@ class AppRoutes {
     builder: (context, state) => const HomeView(),
   );
 
-  static final GoRoute _bookmarks = GoRoute(
-    path: bookmarks,
-    builder: (context, state) => const BookmarksView(),
+  static final GoRoute _local = GoRoute(
+    path: local,
+    builder: (context, state) => const LocalNotes(),
   );
 
   static final GoRouter router = GoRouter(
@@ -44,10 +44,7 @@ class AppRoutes {
                 MainShell(navigationShell: navigationShell),
         branches: [
           StatefulShellBranch(navigatorKey: _homeTabNavKey, routes: [_home]),
-          StatefulShellBranch(
-            navigatorKey: _bookmarksTabNavKey,
-            routes: [_bookmarks],
-          ),
+          StatefulShellBranch(navigatorKey: _localTabNavKey, routes: [_local]),
         ],
       ),
     ],

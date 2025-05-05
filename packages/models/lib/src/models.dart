@@ -1,1 +1,1 @@
-export 'character.dart';
+export 'note.dart';

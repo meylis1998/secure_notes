@@ -28,7 +28,7 @@ class SplashView extends StatelessWidget {
             ),
 
             Text(
-              'Secure Notes App',
+              'Secure Notes',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
           ],

@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:hive/hive.dart';
-
-import '../../bookmarks/cubit/bookmarks_cubit.dart';
-import '../../di/di.dart';
 import '../config/config.dart';
 import '../theme/app_theme.dart';
 import '../theme/theme_cubit.dart';
@@ -14,17 +10,6 @@ class SecureNotesApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // return MultiRepositoryProvider(
-    //   providers: [
-    //     RepositoryProvider(
-    //       create:
-    //           (context) =>
-    //               CharacterRepo(dataSrc: injector<CharacterRemoteDataSrc>()),
-    //     ),
-    //   ],
-    //   child: const SecureNotesAppView(),
-    // );
-
     return SecureNotesAppView();
   }
 }
@@ -34,44 +19,33 @@ class SecureNotesAppView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create:
-              (context) => BookmarksCubit(
-                injector<Box<String>>(instanceName: 'bookmarks'),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return ScreenUtilInit(
+          designSize: Size(constraints.maxWidth, constraints.maxHeight),
+          builder: (context, child) {
+            return BlocProvider<ThemeCubit>(
+              create: (_) => ThemeCubit(),
+              child: BlocBuilder<ThemeCubit, ThemeMode>(
+                builder: (context, mode) {
+                  return MaterialApp.router(
+                    title: 'Secure notes',
+                    theme: AppTheme().lightTheme,
+                    darkTheme: AppTheme().darkTheme,
+                    themeMode: mode,
+                    debugShowCheckedModeBanner: false,
+                    routeInformationProvider:
+                        AppRoutes.router.routeInformationProvider,
+                    routeInformationParser:
+                        AppRoutes.router.routeInformationParser,
+                    routerDelegate: AppRoutes.router.routerDelegate,
+                  );
+                },
               ),
-        ),
-        BlocProvider(create: (context) => ThemeCubit()),
-      ],
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return ScreenUtilInit(
-            designSize: Size(constraints.maxWidth, constraints.maxHeight),
-            builder: (context, child) {
-              return BlocProvider<ThemeCubit>(
-                create: (_) => ThemeCubit(),
-                child: BlocBuilder<ThemeCubit, ThemeMode>(
-                  builder: (context, mode) {
-                    return MaterialApp.router(
-                      title: 'Rick & Morty',
-                      theme: AppTheme().lightTheme,
-                      darkTheme: AppTheme().darkTheme,
-                      themeMode: mode,
-                      debugShowCheckedModeBanner: false,
-                      routeInformationProvider:
-                          AppRoutes.router.routeInformationProvider,
-                      routeInformationParser:
-                          AppRoutes.router.routeInformationParser,
-                      routerDelegate: AppRoutes.router.routerDelegate,
-                    );
-                  },
-                ),
-              );
-            },
-          );
-        },
-      ),
+            );
+          },
+        );
+      },
     );
   }
 }
