@@ -10,16 +10,13 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
     () async {
       WidgetsFlutterBinding.ensureInitialized();
 
-      // ← Initialize Hive, HydratedBloc, services, etc.
       await AppInitializer.init();
 
-      // Lock orientation
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
       ]);
 
-      // Finally run the app
       runApp(await builder());
     },
     (error, stackTrace) {
