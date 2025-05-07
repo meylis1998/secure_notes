@@ -1,3 +1,5 @@
+import 'package:models/models.dart';
+
 abstract class NotesDataSrc {
-  Future getNotes({required String token});
+  Future<List<Note>> getNotes({required String token});
 }

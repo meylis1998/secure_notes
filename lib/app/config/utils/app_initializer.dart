@@ -1,6 +1,7 @@
 // lib/core/app_initializer.dart
 
 import 'dart:async';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:models/models.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -29,7 +30,8 @@ class AppInitializer {
     HydratedBloc.storage = await HydratedStorage.build(
       storageDirectory: HydratedStorageDirectory(tempDir.path),
     );
-
+    await dotenv.load(fileName: '.env');
+    dotenv.env['github_token'];
     await initServices();
   }
 }

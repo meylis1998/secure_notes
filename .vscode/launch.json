@@ -1,0 +1,125 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "secure_notes",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "secure_notes (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "secure_notes (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "dio_client_handler",
+            "cwd": "packages\\dio_client_handler",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "dio_client_handler (profile mode)",
+            "cwd": "packages\\dio_client_handler",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "dio_client_handler (release mode)",
+            "cwd": "packages\\dio_client_handler",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "models",
+            "cwd": "packages\\models",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "models (profile mode)",
+            "cwd": "packages\\models",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "models (release mode)",
+            "cwd": "packages\\models",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "secure_storage_helper",
+            "cwd": "packages\\secure_storage_helper",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "secure_storage_helper (profile mode)",
+            "cwd": "packages\\secure_storage_helper",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "secure_storage_helper (release mode)",
+            "cwd": "packages\\secure_storage_helper",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "notes_data_src",
+            "cwd": "packages\\notes\\notes_data_src",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "notes_data_src (profile mode)",
+            "cwd": "packages\\notes\\notes_data_src",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "notes_data_src (release mode)",
+            "cwd": "packages\\notes\\notes_data_src",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "notes_repo",
+            "cwd": "packages\\notes\\notes_repo",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "notes_repo (profile mode)",
+            "cwd": "packages\\notes\\notes_repo",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "notes_repo (release mode)",
+            "cwd": "packages\\notes\\notes_repo",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}

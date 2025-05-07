@@ -83,6 +83,9 @@ class Note {
     required this.truncated,
   });
 
+  static List<Note> listFromJson(list) =>
+      List<Note>.from(list.map((x) => Note.fromJson(x)));
+
   factory Note.fromJson(Map<String, dynamic> json) {
     return Note(
       url: json['url'] as String,
