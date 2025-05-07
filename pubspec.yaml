@@ -36,6 +36,10 @@ dependencies:
     path: packages/dio_client_handler
   models:
     path: packages/models
+  notes_data_src:
+    path: packages/notes/notes_data_src
+  notes_repo:
+    path: packages/notes/notes_repo
     
   cupertino_icons: ^1.0.8
   google_fonts: ^6.2.1
@@ -54,7 +58,7 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   flutter_secure_storage: ^9.2.4
-  flutter_dotenv: ^5.2.1
+  encrypt: ^5.0.3
 
 dev_dependencies:
   flutter_test:
@@ -81,7 +85,6 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
-    - .env
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

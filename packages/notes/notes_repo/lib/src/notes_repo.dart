@@ -7,6 +7,6 @@ class NotesRepo {
   const NotesRepo({required NotesDataSrc dataSrc}) : _dataSrc = dataSrc;
 
   Future<List<Note>> getNotes() async {
-    return _dataSrc.getNotes(token: '');
+    return _dataSrc.getNotes();
   }
 }

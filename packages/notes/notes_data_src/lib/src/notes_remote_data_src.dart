@@ -9,12 +9,9 @@ class NotesRemoteDataSrc implements NotesDataSrc {
     : _dioClientHandler = dioClientHandler;
 
   @override
-  Future<List<Note>> getNotes({required String token}) async {
+  Future<List<Note>> getNotes() async {
     try {
-      final response = await _dioClientHandler.get(
-        path: '/gists',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
+      final response = await _dioClientHandler.get(path: '/posts');
 
       return Note.listFromJson(response);
     } catch (e) {
