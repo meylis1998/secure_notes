@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:secure_notes/app/theme/app_theme.dart';
 
 import '../app/config/config.dart';
 
@@ -17,7 +18,7 @@ class SplashView extends StatelessWidget {
     return Scaffold(
       body: Container(
         alignment: Alignment.center,
-        color: Color.fromRGBO(180, 155, 135, 1),
+        color: AppTheme.mainColor,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

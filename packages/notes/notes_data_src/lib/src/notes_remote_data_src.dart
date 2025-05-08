@@ -9,7 +9,7 @@ class NotesRemoteDataSrc implements NotesDataSrc {
     : _dioClientHandler = dioClientHandler;
 
   @override
-  Future<List<Note>> getNotes() async {
+  Future<List<Note>> getRemoteNotes() async {
     try {
       final response = await _dioClientHandler.get(path: '/posts');
 
