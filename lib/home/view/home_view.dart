@@ -6,7 +6,7 @@ import 'package:secure_notes/home/view/note_detail_view.dart';
 
 import '../../widgets/note_list_item.dart';
 import '../bloc/note_bloc.dart';
-import 'add_note.dart';
+import 'add_note_view.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -150,23 +150,6 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         onPressed: _navigateToAddNote,
         backgroundColor: Colors.blue,
         child: const Icon(Icons.add, color: Colors.white),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        height: 60,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(icon: const Icon(Icons.grid_view), onPressed: () {}),
-            const SizedBox(width: 48),
-            IconButton(
-              icon: const Icon(Icons.person_outline),
-              onPressed: () {},
-            ),
-          ],
-        ),
       ),
     );
   }
