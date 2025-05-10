@@ -7,8 +7,14 @@ import '../bloc/note_bloc.dart';
 class NoteDetailsView extends StatefulWidget {
   final Note note;
   final bool isLocal;
+  final Color color;
 
-  const NoteDetailsView({super.key, required this.note, this.isLocal = false});
+  const NoteDetailsView({
+    super.key,
+    required this.note,
+    this.isLocal = false,
+    required this.color,
+  });
 
   @override
   State<NoteDetailsView> createState() => _NoteDetailsViewState();
@@ -69,21 +75,10 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
 
   @override
   Widget build(BuildContext context) {
-    // Choose a category color based on the note's userId (just for visual variation)
-    final colors = [
-      Colors.blue.shade100,
-      Colors.green.shade100,
-      Colors.amber.shade100,
-      Colors.pink.shade100,
-      Colors.purple.shade100,
-    ];
-    final colorIndex = widget.note.userId % colors.length;
-    final appBarColor = colors[colorIndex];
-
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Note' : 'Note Details'),
-        backgroundColor: appBarColor,
+        backgroundColor: widget.color,
         actions: [
           if (_isLocal)
             IconButton(
@@ -120,7 +115,7 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Card(
-                color: appBarColor.withOpacity(0.7),
+                color: widget.color.withOpacity(0.7),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
@@ -144,7 +139,7 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
               const SizedBox(height: 16),
               _isEditing
                   ? _buildEditForm()
-                  : _buildReadOnlyView(context, appBarColor),
+                  : _buildReadOnlyView(context, widget.color),
               if (_isSaving)
                 const Center(
                   child: Padding(

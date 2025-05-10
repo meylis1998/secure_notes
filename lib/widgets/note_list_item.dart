@@ -6,26 +6,18 @@ class NoteListItem extends StatelessWidget {
   final Note note;
   final VoidCallback onTap;
   final VoidCallback? onDelete;
+  final Color color;
 
   const NoteListItem({
     super.key,
     required this.note,
     required this.onTap,
+    required this.color,
     this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
-    final colors = [
-      Colors.blue.shade100,
-      Colors.green.shade100,
-      Colors.amber.shade100,
-      Colors.pink.shade100,
-      Colors.purple.shade100,
-    ];
-    final colorIndex = note.userId % colors.length;
-    final cardColor = colors[colorIndex];
-
     if (onDelete != null) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
@@ -42,13 +34,13 @@ class NoteListItem extends StatelessWidget {
               ),
             ],
           ),
-          child: _buildCard(context, cardColor),
+          child: _buildCard(context, color),
         ),
       );
     } else {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
-        child: _buildCard(context, cardColor),
+        child: _buildCard(context, color),
       );
     }
   }

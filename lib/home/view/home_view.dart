@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:models/models.dart';
+import 'package:secure_notes/app/config/utils/random_color_generator.dart';
 import 'package:secure_notes/home/view/note_detail_view.dart';
 
 import '../../widgets/note_list_item.dart';
@@ -18,6 +19,7 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
+  final Map<String, Color> _noteColors = {};
 
   @override
   void initState() {
@@ -107,8 +109,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
           final notes = state.notes;
           return _buildNotesList(
             notes,
-            onTap: (note) => _openNoteDetails(note),
+            onTap: (note) => _openNoteDetails(note, _noteColors),
             onSave: (note) => _saveRemoteNoteLocally(note),
+            noteColors: _noteColors,
           );
         } else if (state is RemoteNotesError) {
           return Center(
@@ -174,8 +177,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
           }
           return _buildNotesList(
             notes,
-            onTap: (note) => _openNoteDetails(note, isLocal: true),
+            onTap: (note) => _openNoteDetails(note, _noteColors, isLocal: true),
             onDelete: (note) => _deleteLocalNote(note),
+            noteColors: _noteColors,
           );
         } else if (state is LocalNotesError) {
           return Center(
@@ -203,6 +207,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     required Function(Note) onTap,
     Function(Note)? onSave,
     Function(Note)? onDelete,
+    required Map<String, Color> noteColors,
   }) {
     return RefreshIndicator(
       onRefresh: () async {
@@ -221,17 +226,33 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             note: note,
             onTap: () => onTap(note),
             onDelete: onDelete != null ? () => onDelete(note) : null,
+            color: noteColors.putIfAbsent(
+              note.id.toString(),
+              getRandomPastelColor,
+            ),
           );
         },
       ),
     );
   }
 
-  void _openNoteDetails(Note note, {bool isLocal = false}) {
+  void _openNoteDetails(
+    Note note,
+    Map<String, Color> noteColors, {
+    bool isLocal = false,
+  }) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => NoteDetailsView(note: note, isLocal: isLocal),
+        builder:
+            (context) => NoteDetailsView(
+              note: note,
+              isLocal: isLocal,
+              color: noteColors.putIfAbsent(
+                note.id.toString(),
+                getRandomPastelColor,
+              ),
+            ),
       ),
     ).then((_) {
       if (isLocal) {
