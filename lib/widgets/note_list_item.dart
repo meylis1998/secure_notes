@@ -16,7 +16,6 @@ class NoteListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Choose a category color based on the note's userId (just for visual variation)
     final colors = [
       Colors.blue.shade100,
       Colors.green.shade100,
@@ -47,7 +46,6 @@ class NoteListItem extends StatelessWidget {
         ),
       );
     } else {
-      // For remote notes, no slidable
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: _buildCard(context, cardColor),
@@ -58,7 +56,6 @@ class NoteListItem extends StatelessWidget {
   Widget _buildCard(BuildContext context, Color cardColor) {
     return Card(
       color: cardColor,
-      elevation: 2,
       child: InkWell(
         onTap: onTap,
         child: Padding(
@@ -73,23 +70,22 @@ class NoteListItem extends StatelessWidget {
                     child: Text(
                       note.title,
                       style: const TextStyle(
-                        fontSize: 18.0,
+                        fontSize: 15.0,
                         fontWeight: FontWeight.bold,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8.0),
+
+              const SizedBox(height: 12.0),
               Text(
                 note.body,
                 style: TextStyle(fontSize: 14.0, color: Colors.grey[800]),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 12.0),
+              const Spacer(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

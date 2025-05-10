@@ -209,7 +209,10 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         _loadNotes();
         return Future.delayed(const Duration(milliseconds: 500));
       },
-      child: ListView.builder(
+      child: GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+        ),
         padding: const EdgeInsets.all(8),
         itemCount: notes.length,
         itemBuilder: (context, index) {

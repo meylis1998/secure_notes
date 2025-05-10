@@ -1,7 +1,9 @@
 // ignore_for_file: deprecated_member_use
 
 import 'dart:async';
+import 'dart:io';
 
+import 'package:dio/io.dart';
 import 'package:dio_client_handler/dio_client_handler.dart';
 import 'package:flutter/material.dart';
 
@@ -16,13 +18,25 @@ class DioClientHandler {
   DioClientHandler._internal() {
     BaseOptions options = BaseOptions(
       baseUrl: DioConstants.BASE,
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
       headers: {},
       contentType: 'application/json; charset=utf-8',
     );
 
     dio = Dio(options);
+
+    // ─── PROXY HOOK ─────────────────────────────────────────────────────────────
+    // This will make every Dio HTTP call go through your local proxy.
+    (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (
+      HttpClient client,
+    ) {
+      client.findProxy = (Uri uri) {
+        return "PROXY 127.0.0.1:10809";
+      };
+      return client;
+    };
+    // ────────────────────────────────────────────────────────────────────────────
 
     dio.interceptors.add(
       InterceptorsWrapper(
