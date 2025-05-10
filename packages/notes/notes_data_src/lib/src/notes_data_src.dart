@@ -1,5 +1,0 @@
-import 'package:models/models.dart';
-
-abstract class NotesDataSrc {
-  Future<List<Note>> getRemoteNotes();
-}

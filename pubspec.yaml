@@ -38,8 +38,8 @@ dependencies:
     path: packages/models
   notes_data_src:
     path: packages/notes/notes_data_src
-  notes_repo:
-    path: packages/notes/notes_repo
+  secure_storage_helper:
+    path: packages/secure_storage_helper
     
   cupertino_icons: ^1.0.8
   google_fonts: ^6.2.1
@@ -61,7 +61,6 @@ dependencies:
   flutter_slidable: ^4.0.0
   intl: ^0.20.2
   grouped_list: ^6.0.0
-  flutter_secure_storage: ^9.2.4
 
 dev_dependencies:
   flutter_test:

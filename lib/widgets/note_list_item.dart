@@ -5,19 +5,18 @@ import 'package:models/models.dart';
 class NoteListItem extends StatelessWidget {
   final Note note;
   final VoidCallback onTap;
-  final VoidCallback? onSave;
   final VoidCallback? onDelete;
 
   const NoteListItem({
     super.key,
     required this.note,
     required this.onTap,
-    this.onSave,
     this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Choose a category color based on the note's userId (just for visual variation)
     final colors = [
       Colors.blue.shade100,
       Colors.green.shade100,
@@ -81,12 +80,6 @@ class NoteListItem extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (onSave != null)
-                    IconButton(
-                      icon: const Icon(Icons.save_alt),
-                      onPressed: onSave,
-                      tooltip: 'Save locally',
-                    ),
                 ],
               ),
               const SizedBox(height: 8.0),

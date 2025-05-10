@@ -2,12 +2,12 @@
 
 import 'dart:async';
 import 'package:models/models.dart';
+import 'package:notes_data_src/encryption_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
 import '../../../di/di.dart';
-import 'encryption_service.dart';
 import 'secure_storage_helper.dart';
 
 class AppInitializer {

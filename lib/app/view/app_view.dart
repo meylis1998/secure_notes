@@ -1,8 +1,8 @@
+import 'package:dio_client_handler/dio_client_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:notes_data_src/notes_data_src.dart';
-import 'package:notes_repo/notes_repo.dart';
 import '../../di/di.dart';
 import '../../home/bloc/note_bloc.dart';
 import '../config/config.dart';
@@ -14,8 +14,21 @@ class SecureNotesApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider(
-      create: (context) => NotesRepo(dataSrc: injector<NotesRemoteDataSrc>()),
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider(
+          create:
+              (context) => NotesRemoteDataSrc(
+                dioClientHandler: injector<DioClientHandler>(),
+              ),
+        ),
+        RepositoryProvider(
+          create:
+              (context) => LocalNotesDataSrc(
+                encryptionService: injector<EncryptionService>(),
+              ),
+        ),
+      ],
       child: SecureNotesAppView(),
     );
   }
@@ -27,7 +40,11 @@ class SecureNotesAppView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => NoteBloc(repository: injector<NotesRepo>()),
+      create:
+          (context) => NoteBloc(
+            localNotesDataSrc: context.read<LocalNotesDataSrc>(),
+            remoteDataSrc: context.read<NotesRemoteDataSrc>(),
+          ),
       child: LayoutBuilder(
         builder: (context, constraints) {
           return ScreenUtilInit(
