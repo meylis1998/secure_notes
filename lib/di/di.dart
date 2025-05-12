@@ -7,17 +7,13 @@ import 'package:notes_data_src/notes_data_src.dart';
 final injector = GetIt.instance;
 
 Future<void> initServices() async {
-  // ─── Core Dependencies ────────────────────────────────────────────
   injector.registerLazySingleton<DioClientHandler>(() => DioClientHandler());
 
-  // 1) Create & init the service
   final encryptionService = EncryptionService();
   await encryptionService.initialize();
 
-  // 2) Register *that* initialized instance
   injector.registerSingleton<EncryptionService>(encryptionService);
 
-  // ─── Data Sources ─────────────────────────────────────────────────
   injector.registerLazySingleton<NotesRemoteDataSrc>(
     () => NotesRemoteDataSrc(dioClientHandler: injector<DioClientHandler>()),
   );

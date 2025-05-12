@@ -115,9 +115,7 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              _isEditing
-                  ? _buildEditForm()
-                  : _buildReadOnlyView(context, widget.color),
+              _isEditing ? _buildEditForm() : _buildReadOnlyView(widget.color),
               if (_isSaving)
                 const Center(
                   child: Padding(
@@ -166,12 +164,13 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
     );
   }
 
-  Widget _buildReadOnlyView(BuildContext context, Color backgroundColor) {
+  Widget _buildReadOnlyView(Color backgroundColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // instead of widget.note.title
         Text(
-          widget.note.title,
+          _titleController.text,
           style: Theme.of(
             context,
           ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
@@ -180,20 +179,22 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
         Card(
           elevation: 0,
           child: Container(
+            padding: const EdgeInsets.all(16),
             width: double.infinity,
-            padding: const EdgeInsets.all(16.0),
+            // instead of widget.note.body
             child: Text(
-              widget.note.body,
+              _bodyController.text,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ),
         ),
+        // userId and id never change, so you can still use widget.note for those
         const SizedBox(height: 16),
         Card(
           elevation: 0,
           color: backgroundColor.withOpacity(0.5),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
