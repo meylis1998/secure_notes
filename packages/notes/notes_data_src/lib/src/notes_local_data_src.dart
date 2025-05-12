@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:models/models.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -44,7 +45,12 @@ class LocalNotesDataSrc {
     );
     final String encryptedContent = _encryptionService.encrypt(jsonContent);
 
+    // write it…
     await file.writeAsString(encryptedContent);
+
+    // then immediately print out where it went and what’s inside
+    debugPrint('🔒 Saved encrypted notes to: ${file.path}');
+    debugPrint('🔒 Ciphertext on disk: $encryptedContent');
   }
 
   Future<Note> addNote(Note note) async {

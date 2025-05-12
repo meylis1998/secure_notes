@@ -30,6 +30,8 @@ class _HomeViewState extends State<HomeView> {
   }
 
   void _loadNotes() {
+    context.read<NoteBloc>().add(LoadLocalNotes());
+
     context.read<NoteBloc>().add(LoadRemoteNotes());
   }
 
@@ -48,11 +50,7 @@ class _HomeViewState extends State<HomeView> {
 
   void _onNavTapped(int index) {
     setState(() => _selectedIndex = index);
-    if (index == 0) {
-      context.read<NoteBloc>().add(LoadLocalNotes());
-    } else {
-      context.read<NoteBloc>().add(LoadRemoteNotes());
-    }
+    _loadNotes();
   }
 
   @override
@@ -108,7 +106,11 @@ class LocalNotesTab extends StatelessWidget {
           ).showSnackBar(SnackBar(content: Text(state.message)));
         } else if (state is NoteActionFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 2),
+            ),
           );
         }
       },

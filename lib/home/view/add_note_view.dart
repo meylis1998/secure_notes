@@ -71,6 +71,7 @@ class _AddNoteViewState extends State<AddNoteView> {
               SnackBar(
                 content: Text(state.message),
                 backgroundColor: Colors.red,
+                duration: const Duration(seconds: 2),
               ),
             );
           }

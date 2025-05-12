@@ -54,6 +54,7 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
         const SnackBar(
           content: Text('Title and content cannot be empty'),
           backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
         ),
       );
       return;
@@ -105,6 +106,7 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
               SnackBar(
                 content: Text(state.message),
                 backgroundColor: Colors.red,
+                duration: const Duration(seconds: 2),
               ),
             );
           }

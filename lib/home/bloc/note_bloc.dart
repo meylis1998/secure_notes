@@ -53,14 +53,15 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     AddLocalNote event,
     Emitter<NoteState> emit,
   ) async {
+    emit(LocalNotesLoading());
     try {
+      await localNotesDataSrc.addNote(event.note);
       final notes = await localNotesDataSrc.getNotes();
-      notes.add(event.note);
-      await localNotesDataSrc.saveNotes(notes);
+
       emit(LocalNotesLoaded(notes));
       emit(NoteActionSuccess('Note added successfully'));
     } catch (e) {
-      emit(NoteActionFailure('Failed to add note: ${e.toString()}'));
+      emit(NoteActionFailure('Failed to add note: $e'));
     }
   }
 
@@ -68,13 +69,18 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     UpdateLocalNote event,
     Emitter<NoteState> emit,
   ) async {
+    emit(LocalNotesLoading());
     try {
+      // Persist the change:
       await localNotesDataSrc.updateNote(event.note);
+
+      // And reload the list:
       final notes = await localNotesDataSrc.getNotes();
+
       emit(LocalNotesLoaded(notes));
       emit(NoteActionSuccess('Note updated successfully'));
     } catch (e) {
-      emit(NoteActionFailure('Failed to update note: ${e.toString()}'));
+      emit(NoteActionFailure('Failed to update note: $e'));
     }
   }
 
