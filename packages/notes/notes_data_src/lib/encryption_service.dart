@@ -14,17 +14,23 @@ class EncryptionService {
 
   Future<void> initialize() async {
     String? storedKey = await _secureStorage.read(key: _keyName);
+    try {
+      if (storedKey == null) {
+        final key = Key.fromSecureRandom(32);
+        await _secureStorage.write(
+          key: _keyName,
+          value: base64Encode(key.bytes),
+        );
+        _encryptionKey = key;
+      } else {
+        _encryptionKey = Key(base64Decode(storedKey));
+      }
 
-    if (storedKey == null) {
-      final key = Key.fromSecureRandom(32);
-      await _secureStorage.write(key: _keyName, value: base64Encode(key.bytes));
-      _encryptionKey = key;
-    } else {
-      _encryptionKey = Key(base64Decode(storedKey));
+      _encrypter = Encrypter(AES(_encryptionKey));
+      _iv = IV.fromLength(16);
+    } catch (e) {
+      print('Encryption error: $e');
     }
-
-    _encrypter = Encrypter(AES(_encryptionKey));
-    _iv = IV.fromLength(16);
   }
 
   String encrypt(String plainText) {

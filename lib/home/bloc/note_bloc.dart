@@ -17,10 +17,10 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
 
     // Local note events
     on<LoadLocalNotes>(_onLoadLocalNotes);
-    // on<AddLocalNote>(_onAddLocalNote);
+    on<AddLocalNote>(_onAddLocalNote);
     on<UpdateLocalNote>(_onUpdateLocalNote);
     on<DeleteLocalNote>(_onDeleteLocalNote);
-    // on<SaveRemoteNoteLocally>(_onSaveRemoteNoteLocally);
+    on<SaveRemoteNoteLocally>(_onSaveRemoteNoteLocally);
   }
 
   Future<void> _onLoadRemoteNotes(
@@ -49,19 +49,20 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     }
   }
 
-  // Future<void> _onAddLocalNote(
-  //   AddLocalNote event,
-  //   Emitter<NoteState> emit,
-  // ) async {
-  //   try {
-  //     await localNotesDataSrc.saveNotes(event.note);
-  //     final notes = await localNotesDataSrc.getNotes();
-  //     emit(LocalNotesLoaded(notes));
-  //     emit(NoteActionSuccess('Note added successfully'));
-  //   } catch (e) {
-  //     emit(NoteActionFailure('Failed to add note: ${e.toString()}'));
-  //   }
-  // }
+  Future<void> _onAddLocalNote(
+    AddLocalNote event,
+    Emitter<NoteState> emit,
+  ) async {
+    try {
+      final notes = await localNotesDataSrc.getNotes();
+      notes.add(event.note);
+      await localNotesDataSrc.saveNotes(notes);
+      emit(LocalNotesLoaded(notes));
+      emit(NoteActionSuccess('Note added successfully'));
+    } catch (e) {
+      emit(NoteActionFailure('Failed to add note: ${e.toString()}'));
+    }
+  }
 
   Future<void> _onUpdateLocalNote(
     UpdateLocalNote event,
@@ -91,17 +92,17 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     }
   }
 
-  // Future<void> _onSaveRemoteNoteLocally(
-  //   SaveRemoteNoteLocally event,
-  //   Emitter<NoteState> emit,
-  // ) async {
-  //   try {
-  //     await localNotesDataSrc.saveNotes(event.note);
-  //     emit(NoteActionSuccess('Remote note saved locally'));
-  //     final notes = await localNotesDataSrc.getNotes();
-  //     emit(LocalNotesLoaded(notes));
-  //   } catch (e) {
-  //     emit(NoteActionFailure('Failed to save remote note: ${e.toString()}'));
-  //   }
-  // }
+  Future<void> _onSaveRemoteNoteLocally(
+    SaveRemoteNoteLocally event,
+    Emitter<NoteState> emit,
+  ) async {
+    try {
+      await localNotesDataSrc.saveNotes([event.note]);
+      emit(NoteActionSuccess('Remote note saved locally'));
+      final notes = await localNotesDataSrc.getNotes();
+      emit(LocalNotesLoaded(notes));
+    } catch (e) {
+      emit(NoteActionFailure('Failed to save remote note: ${e.toString()}'));
+    }
+  }
 }

@@ -47,9 +47,11 @@ class NoteListItem extends StatelessWidget {
 
   Widget _buildCard(BuildContext context, Color cardColor) {
     return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       color: cardColor,
       child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(

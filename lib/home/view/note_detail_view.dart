@@ -114,28 +114,6 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Card(
-                color: widget.color.withOpacity(0.7),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child:
-                            _isLocal
-                                ? const Text(
-                                  'This note is stored securely on your device',
-                                )
-                                : const Text(
-                                  'This note is from the remote API',
-                                ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
               const SizedBox(height: 16),
               _isEditing
                   ? _buildEditForm()
@@ -200,7 +178,7 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
         ),
         const SizedBox(height: 8),
         Card(
-          elevation: 2,
+          elevation: 0,
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16.0),
@@ -212,6 +190,7 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
         ),
         const SizedBox(height: 16),
         Card(
+          elevation: 0,
           color: backgroundColor.withOpacity(0.5),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
