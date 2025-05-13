@@ -3,14 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:models/models.dart';
 import 'package:secure_notes/app/config/utils/random_color_generator.dart';
 import 'package:secure_notes/app/theme/app_theme.dart';
-import 'package:secure_notes/home/view/note_detail_view.dart';
 import '../bloc/note_bloc.dart';
 import 'add_note_view.dart';
-import 'widgets/empty_state.dart';
-import 'widgets/error_state.dart';
-import 'widgets/notes_grid.dart';
+import 'note_detail_view.dart';
 
-/// Main HomeView widget with navigation between local and remote notes
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
 
@@ -19,57 +15,175 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  final TextEditingController _searchController = TextEditingController();
+  int _selectedTab = 0;
   final Map<String, Color> _noteColors = {};
-  int _selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadNotes();
-  }
-
-  void _loadNotes() {
+    // initially load local notes only
     context.read<NoteBloc>().add(LoadLocalNotes());
-
-    context.read<NoteBloc>().add(LoadRemoteNotes());
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
   }
 
   void _navigateToAddNote() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const AddNoteView()),
-    ).then((_) => context.read<NoteBloc>().add(LoadLocalNotes()));
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => const AddNoteView()))
+        .then((_) => context.read<NoteBloc>().add(LoadLocalNotes()));
   }
 
   void _onNavTapped(int index) {
-    setState(() => _selectedIndex = index);
-    _loadNotes();
+    setState(() => _selectedTab = index);
+    // load only the selected tab
+    if (index == 0) {
+      context.read<NoteBloc>().add(LoadLocalNotes());
+    } else {
+      context.read<NoteBloc>().add(LoadRemoteNotes());
+    }
+  }
+
+  Widget _buildNoteTile(Note note, bool isLocal) {
+    final color = _noteColors.putIfAbsent(
+      note.id.toString(),
+      getRandomPastelColor,
+    );
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context)
+            .push(
+              MaterialPageRoute(
+                builder:
+                    (_) => NoteDetailsView(
+                      note: note,
+                      isLocal: isLocal,
+                      accentColor: color,
+                    ),
+              ),
+            )
+            .then((_) {
+              if (isLocal) context.read<NoteBloc>().add(LoadLocalNotes());
+            });
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade900,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  _relativeDate(note),
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+                const SizedBox(width: 6),
+                Icon(Icons.brightness_1, size: 4, color: Colors.white70),
+                const SizedBox(width: 6),
+                Text(
+                  isLocal ? 'Drafts' : 'folio',
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+                const Spacer(),
+                Icon(Icons.edit, color: Colors.white70, size: 18),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              note.title,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _relativeDate(Note note) {
+    final now = DateTime.now();
+    final created = DateTime.fromMillisecondsSinceEpoch(
+      now.millisecondsSinceEpoch - (note.id * 86400000),
+    );
+    final diff = now.difference(created).inDays;
+    if (diff == 0) return 'Today';
+    if (diff == 1) return 'Yesterday';
+    return '${created.day}.${created.month}.${created.year}';
+  }
+
+  Widget _buildBody() {
+    return BlocBuilder<NoteBloc, NoteState>(
+      builder: (context, state) {
+        List<Note> notes = [];
+        bool loading = false;
+
+        if (_selectedTab == 0) {
+          if (state is LocalNotesLoading) loading = true;
+          if (state is LocalNotesLoaded) notes = state.notes;
+        } else {
+          if (state is RemoteNotesLoading) loading = true;
+          if (state is RemoteNotesLoaded) notes = state.notes;
+        }
+
+        if (loading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (notes.isEmpty) {
+          return Center(
+            child: Text(
+              _selectedTab == 0
+                  ? 'No secure notes yet.'
+                  : 'No remote notes available.',
+              style: TextStyle(color: Colors.white70),
+            ),
+          );
+        }
+
+        return GridView.builder(
+          // padding: const EdgeInsets.only(bottom: 80),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+          ),
+          itemCount: notes.length,
+          itemBuilder:
+              (_, idx) => _buildNoteTile(notes[idx], _selectedTab == 0),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final pages = [
-      LocalNotesTab(noteColors: _noteColors, onAddNote: _navigateToAddNote),
-      RemoteNotesTab(noteColors: _noteColors),
-    ];
-
     return Scaffold(
-      body: SafeArea(child: pages[_selectedIndex]),
+      appBar: AppBar(
+        backgroundColor: AppTheme.black,
+        elevation: 10,
+        title: Text(
+          'Secure Notes',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.white,
+          ),
+        ),
+      ),
+      backgroundColor: const Color(0xFF121212),
+      body: SafeArea(child: _buildBody()),
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToAddNote,
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: Colors.purpleAccent,
+        child: const Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
+        backgroundColor: const Color(0xFF1F1F1F),
+        currentIndex: _selectedTab,
         onTap: _onNavTapped,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white54,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.note), label: 'Notes'),
           BottomNavigationBarItem(
@@ -77,157 +191,6 @@ class _HomeViewState extends State<HomeView> {
             label: 'Remote',
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Widget for displaying local notes with BlocConsumer
-class LocalNotesTab extends StatelessWidget {
-  final Map<String, Color> noteColors;
-  final VoidCallback onAddNote;
-
-  const LocalNotesTab({
-    required this.noteColors,
-    required this.onAddNote,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<NoteBloc, NoteState>(
-      listenWhen:
-          (prev, curr) =>
-              curr is NoteActionSuccess || curr is NoteActionFailure,
-      listener: (context, state) {
-        if (state is NoteActionSuccess) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
-        } else if (state is NoteActionFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
-      },
-      buildWhen:
-          (prev, curr) =>
-              curr is LocalNotesLoading ||
-              curr is LocalNotesLoaded ||
-              curr is LocalNotesError,
-      builder: (context, state) {
-        if (state is LocalNotesLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is LocalNotesLoaded) {
-          final notes = state.notes;
-          if (notes.isEmpty) {
-            return EmptyState(
-              message: 'No secure notes yet.',
-              actionLabel: 'Add Note',
-              onAction: onAddNote,
-            );
-          }
-          return NotesGrid(
-            notes: notes,
-            noteColors: noteColors,
-            onTap: (note) => _openNoteDetails(context, note, true),
-            onDelete: (note) => _deleteLocalNote(context, note),
-          );
-        } else if (state is LocalNotesError) {
-          return ErrorState(
-            message: state.message,
-            onRetry: () => context.read<NoteBloc>().add(LoadLocalNotes()),
-          );
-        }
-        return const Center(child: Text('Click + to add notes'));
-      },
-    );
-  }
-
-  void _openNoteDetails(BuildContext context, Note note, bool isLocal) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (_) => NoteDetailsView(
-              note: note,
-              isLocal: isLocal,
-              color: noteColors.putIfAbsent(
-                note.id.toString(),
-                getRandomPastelColor,
-              ),
-            ),
-      ),
-    ).then((_) {
-      if (isLocal) context.read<NoteBloc>().add(LoadLocalNotes());
-    });
-  }
-
-  void _deleteLocalNote(BuildContext context, Note note) {
-    context.read<NoteBloc>().add(DeleteLocalNote(note.id));
-  }
-}
-
-/// Widget for displaying remote notes with BlocBuilder
-class RemoteNotesTab extends StatelessWidget {
-  final Map<String, Color> noteColors;
-
-  const RemoteNotesTab({required this.noteColors, super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<NoteBloc, NoteState>(
-      buildWhen:
-          (prev, curr) =>
-              curr is RemoteNotesLoading ||
-              curr is RemoteNotesLoaded ||
-              curr is RemoteNotesError,
-      builder: (context, state) {
-        if (state is RemoteNotesLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is RemoteNotesLoaded) {
-          return NotesGrid(
-            notes: state.notes,
-            noteColors: noteColors,
-            onTap: (note) => _openNoteDetails(context, note),
-          );
-        } else if (state is RemoteNotesError) {
-          return ErrorState(
-            message: 'Error occurred',
-            onRetry: () => context.read<NoteBloc>().add(LoadRemoteNotes()),
-            retryButtonStyle: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.mainColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-            ),
-            retryTextStyle: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: AppTheme.white,
-            ),
-          );
-        }
-        return const Center(child: Text('No remote notes available'));
-      },
-    );
-  }
-
-  void _openNoteDetails(BuildContext context, Note note) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (_) => NoteDetailsView(
-              note: note,
-              color: noteColors.putIfAbsent(
-                note.id.toString(),
-                getRandomPastelColor,
-              ),
-            ),
       ),
     );
   }

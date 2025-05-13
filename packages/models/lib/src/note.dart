@@ -23,6 +23,15 @@ class Note extends HiveObject {
     required this.body,
   });
 
+  Note copyWith({int? userId, int? id, String? title, String? body}) {
+    return Note(
+      userId: userId ?? this.userId,
+      id: id ?? this.id,
+      title: title ?? this.title,
+      body: body ?? this.body,
+    );
+  }
+
   static List<Note> listFromJson(list) =>
       List<Note>.from(list.map((x) => Note.fromJson(x)));
 

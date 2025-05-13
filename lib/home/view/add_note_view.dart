@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:models/models.dart';
+import 'package:secure_notes/app/theme/app_theme.dart';
 import '../bloc/note_bloc.dart';
 
 class AddNoteView extends StatefulWidget {
@@ -11,125 +12,114 @@ class AddNoteView extends StatefulWidget {
 }
 
 class _AddNoteViewState extends State<AddNoteView> {
-  final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _bodyController = TextEditingController();
+  final _titleCtrl = TextEditingController();
+  final _bodyCtrl = TextEditingController();
   bool _isSaving = false;
 
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _bodyController.dispose();
-    super.dispose();
+  Widget _buildTitleField() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: TextField(
+        controller: _titleCtrl,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
+        ),
+        decoration: InputDecoration(
+          hintText: 'Title of your note…',
+          hintStyle: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppTheme.white, fontSize: 24),
+          border: InputBorder.none,
+        ),
+      ),
+    );
   }
 
-  void _saveNote() {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isSaving = true;
-      });
+  Widget _buildBodyField() {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: TextField(
+          controller: _bodyCtrl,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: AppTheme.white,
+            height: 1.5,
+            fontSize: 18,
+          ),
+          maxLines: null,
+          decoration: InputDecoration(
+            hintText: 'Your full note goes here…',
+            hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppTheme.white,
+              fontSize: 18,
+            ),
+            border: InputBorder.none,
+          ),
+        ),
+      ),
+    );
+  }
 
-      final note = Note(
-        userId: 1,
-        id: 0,
-        title: _titleController.text,
-        body: _bodyController.text,
-      );
-
-      context.read<NoteBloc>().add(AddLocalNote(note));
-
-      Navigator.of(context).pop();
-    }
+  void _save() {
+    if (_titleCtrl.text.trim().isEmpty || _bodyCtrl.text.trim().isEmpty) return;
+    setState(() => _isSaving = true);
+    final note = Note(
+      userId: 1,
+      id: 0,
+      title: _titleCtrl.text,
+      body: _bodyCtrl.text,
+    );
+    context.read<NoteBloc>().add(AddLocalNote(note));
+    context.read<NoteBloc>().add(LoadLocalNotes());
+    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: const Text('Add New Note'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _isSaving ? null : _saveNote,
+        title: Text(
+          'Add note',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: AppTheme.white,
+            fontSize: 25,
           ),
-        ],
+        ),
+        centerTitle: true,
+        backgroundColor: AppTheme.black,
       ),
-      body: BlocListener<NoteBloc, NoteState>(
-        listener: (context, state) {
-          if (state is NoteActionSuccess) {
-            setState(() {
-              _isSaving = false;
-            });
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
-          } else if (state is NoteActionFailure) {
-            setState(() {
-              _isSaving = false;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          }
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                TextFormField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(
-                    labelText: 'Title',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a title';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                Expanded(
-                  child: TextFormField(
-                    controller: _bodyController,
-                    decoration: const InputDecoration(
-                      labelText: 'Content',
-                      alignLabelWithHint: true,
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLines: null,
-                    expands: true,
-                    textAlignVertical: TextAlignVertical.top,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter some content';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16.0),
-                ElevatedButton(
-                  onPressed: _isSaving ? null : _saveNote,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                  child:
-                      _isSaving
-                          ? const CircularProgressIndicator()
-                          : const Text('SAVE NOTE'),
-                ),
-              ],
-            ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF121212), Color(0xFF1E1E1E)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
+        ),
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [_buildTitleField(), _buildBodyField()],
+          ),
+        ),
+      ),
+      floatingActionButton: ElevatedButton(
+        onPressed: _isSaving ? null : _save,
+        style: ElevatedButton.styleFrom(
+          shape: CircleBorder(),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          // primary: Colors.purpleAccent,
+          backgroundColor: AppTheme.white,
+        ),
+        child: Text(
+          '+',
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppTheme.black, fontSize: 35),
         ),
       ),
     );

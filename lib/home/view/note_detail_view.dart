@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:models/models.dart';
-
+import 'package:secure_notes/app/theme/app_theme.dart';
 import '../bloc/note_bloc.dart';
 
 class NoteDetailsView extends StatefulWidget {
   final Note note;
   final bool isLocal;
-  final Color color;
+  final Color accentColor;
 
   const NoteDetailsView({
     super.key,
     required this.note,
     this.isLocal = false,
-    required this.color,
+    required this.accentColor,
   });
 
   @override
@@ -24,7 +24,6 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
   late TextEditingController _titleController;
   late TextEditingController _bodyController;
   bool _isEditing = false;
-  bool _isLocal = false;
   bool _isSaving = false;
 
   @override
@@ -32,7 +31,6 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
     super.initState();
     _titleController = TextEditingController(text: widget.note.title);
     _bodyController = TextEditingController(text: widget.note.body);
-    _isLocal = widget.isLocal;
   }
 
   @override
@@ -42,171 +40,185 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
     super.dispose();
   }
 
-  void _toggleEditMode() {
-    setState(() {
-      _isEditing = !_isEditing;
-    });
-  }
+  void _toggleEditMode() => setState(() => _isEditing = !_isEditing);
 
   void _saveChanges() {
-    if (_titleController.text.isEmpty || _bodyController.text.isEmpty) {
+    if (_titleController.text.trim().isEmpty ||
+        _bodyController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Title and content cannot be empty'),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 2),
+          content: Text('Both title and content are required.'),
+          backgroundColor: Colors.redAccent,
         ),
       );
       return;
     }
-
-    setState(() {
-      _isSaving = true;
-    });
-
-    final updatedNote = Note(
-      id: widget.note.id,
-      userId: widget.note.userId,
-      title: _titleController.text,
-      body: _bodyController.text,
+    setState(() => _isSaving = true);
+    final updated = widget.note.copyWith(
+      title: _titleController.text.trim(),
+      body: _bodyController.text.trim(),
     );
-
-    context.read<NoteBloc>().add(UpdateLocalNote(updatedNote));
+    context.read<NoteBloc>().add(UpdateLocalNote(updated));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Note' : 'Note Details'),
-        backgroundColor: widget.color,
-        actions: [
-          if (_isLocal)
-            IconButton(
-              icon: Icon(_isEditing ? Icons.check : Icons.edit),
-              onPressed: _isEditing ? _saveChanges : _toggleEditMode,
-            ),
-        ],
+        backgroundColor: AppTheme.black,
+        title: Text(
+          'Note details',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: AppTheme.white,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
-      body: BlocListener<NoteBloc, NoteState>(
-        listener: (context, state) {
-          if (state is NoteActionSuccess) {
-            setState(() {
-              _isSaving = false;
-              if (_isEditing) _isEditing = false;
-            });
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
-          } else if (state is NoteActionFailure) {
-            setState(() {
-              _isSaving = false;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          }
-        },
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 16),
-              _isEditing ? _buildEditForm() : _buildReadOnlyView(widget.color),
-              if (_isSaving)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: CircularProgressIndicator(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF121212), Color(0xFF1E1E1E)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: BlocListener<NoteBloc, NoteState>(
+            listener: (context, state) {
+              if (state is NoteActionSuccess) {
+                setState(() {
+                  _isSaving = false;
+                  _isEditing = false;
+                });
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.message)));
+              } else if (state is NoteActionFailure) {
+                setState(() => _isSaving = false);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: Colors.redAccent,
                   ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEditForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        TextFormField(
-          controller: _titleController,
-          decoration: const InputDecoration(
-            labelText: 'Title',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 16.0),
-        TextFormField(
-          controller: _bodyController,
-          decoration: const InputDecoration(
-            labelText: 'Content',
-            border: OutlineInputBorder(),
-            alignLabelWithHint: true,
-          ),
-          maxLines: 15,
-          minLines: 5,
-        ),
-        const SizedBox(height: 16.0),
-        ElevatedButton(
-          onPressed: _saveChanges,
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-          ),
-          child: const Text('SAVE CHANGES'),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildReadOnlyView(Color backgroundColor) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // instead of widget.note.title
-        Text(
-          _titleController.text,
-          style: Theme.of(
-            context,
-          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        Card(
-          elevation: 0,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            width: double.infinity,
-            // instead of widget.note.body
-            child: Text(
-              _bodyController.text,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-          ),
-        ),
-        // userId and id never change, so you can still use widget.note for those
-        const SizedBox(height: 16),
-        Card(
-          elevation: 0,
-          color: backgroundColor.withOpacity(0.5),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
+                );
+              }
+            },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('User ID: ${widget.note.userId}'),
-                Text('Note ID: ${widget.note.id}'),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(15),
+                    child: AnimatedCrossFade(
+                      firstChild: _buildReadOnly(),
+                      secondChild: _buildEditor(),
+                      crossFadeState:
+                          _isEditing
+                              ? CrossFadeState.showSecond
+                              : CrossFadeState.showFirst,
+                      duration: const Duration(milliseconds: 300),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         ),
+      ),
+      floatingActionButton: widget.isLocal ? _buildFab() : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+    );
+  }
+
+  Widget _buildFab() {
+    return FloatingActionButton(
+      backgroundColor: AppTheme.white,
+      onPressed: _isEditing ? _saveChanges : _toggleEditMode,
+      child: Icon(_isEditing ? Icons.check : Icons.edit, color: AppTheme.black),
+    );
+  }
+
+  Widget _buildReadOnly() {
+    return Column(
+      children: [
+        Text(
+          widget.note.title,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.grey.shade800,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Text(
+            widget.note.body,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+          ),
+        ),
       ],
     );
   }
+
+  Widget _buildEditor() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: _titleController,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: AppTheme.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+          decoration: InputDecoration(
+            hintText: 'Title of your note…',
+            hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Colors.white54,
+              fontSize: 24,
+            ),
+            border: InputBorder.none,
+          ),
+        ),
+        const Divider(color: AppTheme.white, thickness: 0.5, endIndent: 250),
+        TextField(
+          controller: _bodyController,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppTheme.white),
+          maxLines: null,
+          decoration: InputDecoration(
+            hintText: 'Your full note goes here…',
+            labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppTheme.white,
+              fontSize: 25,
+            ),
+            hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppTheme.white,
+              fontSize: 24,
+            ),
+            border: InputBorder.none,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Helper extension to create copyWith on Note model
+extension NoteCopy on Note {
+  Note copyWith({String? title, String? body}) => Note(
+    userId: userId,
+    id: id,
+    title: title ?? this.title,
+    body: body ?? this.body,
+  );
 }

@@ -30,7 +30,7 @@ class AppTheme {
     fontFamily: fontFamily,
     primaryTextTheme: TextTheme(bodyMedium: GoogleFonts.raleway()),
     appBarTheme: AppBarTheme(
-      iconTheme: IconThemeData(size: 30.sp),
+      iconTheme: IconThemeData(color: AppTheme.white),
       color: AppTheme.white,
       surfaceTintColor: AppTheme.white,
     ),
