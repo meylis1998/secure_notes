@@ -2,7 +2,6 @@ import 'package:dio_client_handler/dio_client_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:notes_data_src/encryption_service.dart';
 import 'package:notes_data_src/notes_data_src.dart';
 import '../../di/di.dart';
 import '../../home/bloc/note_bloc.dart';
@@ -23,11 +22,8 @@ class SecureNotesApp extends StatelessWidget {
                 dioClientHandler: injector<DioClientHandler>(),
               ),
         ),
-        RepositoryProvider(
-          create:
-              (context) => LocalNotesDataSrc(
-                encryptionService: injector<EncryptionService>(),
-              ),
+        RepositoryProvider<LocalNotesDataSrc>(
+          create: (context) => injector<LocalNotesDataSrc>(),
         ),
       ],
       child: SecureNotesAppView(),

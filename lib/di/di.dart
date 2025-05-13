@@ -3,6 +3,8 @@ import 'package:dio_client_handler/dio_client_handler.dart';
 import 'package:notes_data_src/encryption_service.dart';
 import 'package:notes_data_src/notes_data_src.dart';
 
+import '../app/config/utils/local_notes.dart';
+
 /// Global service locator
 final injector = GetIt.instance;
 
@@ -19,6 +21,6 @@ Future<void> initServices() async {
   );
 
   injector.registerLazySingleton<LocalNotesDataSrc>(
-    () => LocalNotesDataSrc(encryptionService: injector<EncryptionService>()),
+    () => LocalNotesHive(), // <-- now using Hive
   );
 }
