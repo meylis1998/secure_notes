@@ -7,8 +7,10 @@ abstract class NoteEvent extends Equatable {
   List<Object> get props => [];
 }
 
+// Remote note events
 class LoadRemoteNotes extends NoteEvent {}
 
+// Local note events
 class LoadLocalNotes extends NoteEvent {}
 
 class AddLocalNote extends NoteEvent {

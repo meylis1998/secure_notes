@@ -43,6 +43,8 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     emit(LocalNotesLoading());
     try {
       final notes = await localNotesDataSrc.getNotes();
+      // sort newest first:
+      notes.sort((a, b) => b.id.compareTo(a.id));
       emit(LocalNotesLoaded(notes));
     } catch (e) {
       emit(LocalNotesError(e.toString()));
@@ -57,7 +59,6 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     try {
       await localNotesDataSrc.addNote(event.note);
       final notes = await localNotesDataSrc.getNotes();
-
       emit(LocalNotesLoaded(notes));
       emit(NoteActionSuccess('Note added successfully'));
     } catch (e) {
@@ -69,16 +70,12 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     UpdateLocalNote event,
     Emitter<NoteState> emit,
   ) async {
-    emit(LocalNotesLoading());
     try {
-      // Persist the change:
       await localNotesDataSrc.updateNote(event.note);
 
-      // And reload the list:
-      final notes = await localNotesDataSrc.getNotes();
-
-      emit(LocalNotesLoaded(notes));
       emit(NoteActionSuccess('Note updated successfully'));
+
+      add(LoadLocalNotes());
     } catch (e) {
       emit(NoteActionFailure('Failed to update note: $e'));
     }
@@ -90,9 +87,10 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
   ) async {
     try {
       await localNotesDataSrc.deleteNote(event.id);
-      final notes = await localNotesDataSrc.getNotes();
-      emit(LocalNotesLoaded(notes));
+
       emit(NoteActionSuccess('Note deleted successfully'));
+
+      add(LoadLocalNotes());
     } catch (e) {
       emit(NoteActionFailure('Failed to delete note: ${e.toString()}'));
     }

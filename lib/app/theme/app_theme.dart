@@ -8,7 +8,7 @@ class AppTheme {
   static const Color grey = Colors.grey;
   static Color red = Colors.red.shade600;
   static const Color transparent = Colors.transparent;
-  static const Color backgroundColor = Color.fromRGBO(245, 247, 250, 1);
+  static const Color backgroundColor = Color(0xFF121212);
   static const Color unselectedColor = Colors.grey;
   static const Color greenColor = Color.fromRGBO(31, 210, 103, 1);
   static const Color green = Colors.green;
@@ -23,7 +23,7 @@ class AppTheme {
     colorScheme: ColorScheme.fromSeed(
       primary: mainColor,
       seedColor: white,
-      surface: white,
+      surface: const Color(0xFF121212),
     ),
     highlightColor: AppTheme.grey.withAlpha((0.2 * 255).toInt()),
     useMaterial3: true,
@@ -31,7 +31,7 @@ class AppTheme {
     primaryTextTheme: TextTheme(bodyMedium: GoogleFonts.raleway()),
     appBarTheme: AppBarTheme(
       iconTheme: IconThemeData(color: AppTheme.white),
-      color: AppTheme.white,
+      color: backgroundColor,
       surfaceTintColor: AppTheme.white,
     ),
     dialogTheme: DialogThemeData(

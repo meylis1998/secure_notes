@@ -18,7 +18,7 @@ class SplashView extends StatelessWidget {
     return Scaffold(
       body: Container(
         alignment: Alignment.center,
-        color: AppTheme.mainColor,
+        color: AppTheme.black,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -27,10 +27,13 @@ class SplashView extends StatelessWidget {
               width: Constants.deviceWidth(context) / 2.5,
               height: Constants.deviceHeight(context) / 2.5,
             ),
-
             Text(
               'Secure Notes',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.white,
+              ),
             ),
           ],
         ),

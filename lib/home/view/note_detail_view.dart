@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:models/models.dart';
@@ -25,12 +26,14 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
   late TextEditingController _bodyController;
   bool _isEditing = false;
   bool _isSaving = false;
+  late Note _currentNote;
 
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.note.title);
-    _bodyController = TextEditingController(text: widget.note.body);
+    _currentNote = widget.note;
+    _titleController = TextEditingController(text: _currentNote.title);
+    _bodyController = TextEditingController(text: _currentNote.body);
   }
 
   @override
@@ -54,77 +57,136 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
       return;
     }
     setState(() => _isSaving = true);
-    final updated = widget.note.copyWith(
+    final updated = _currentNote.copyWith(
       title: _titleController.text.trim(),
       body: _bodyController.text.trim(),
     );
     context.read<NoteBloc>().add(UpdateLocalNote(updated));
   }
 
+  void _deleteNote() {
+    // Show confirmation dialog before deleting
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete Note'),
+          content: const Text(
+            'Are you sure you want to delete this note? This cannot be undone.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); // Close dialog
+              },
+              child: const Text('CANCEL'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); // Close dialog
+                // Add the delete event
+                context.read<NoteBloc>().add(DeleteLocalNote(_currentNote.id));
+                // Navigate back after deletion
+                Navigator.of(context).pop();
+              },
+              child: const Text('DELETE', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppTheme.black,
         title: Text(
           'Note details',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: AppTheme.white,
-            fontSize: 22,
+            fontSize: 25,
             fontWeight: FontWeight.bold,
           ),
         ),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF121212), Color(0xFF1E1E1E)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: SafeArea(
-          child: BlocListener<NoteBloc, NoteState>(
-            listener: (context, state) {
-              if (state is NoteActionSuccess) {
-                setState(() {
-                  _isSaving = false;
-                  _isEditing = false;
-                });
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(state.message)));
-              } else if (state is NoteActionFailure) {
-                setState(() => _isSaving = false);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.message),
-                    backgroundColor: Colors.redAccent,
-                  ),
-                );
-              }
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(15),
-                    child: AnimatedCrossFade(
-                      firstChild: _buildReadOnly(),
-                      secondChild: _buildEditor(),
-                      crossFadeState:
-                          _isEditing
-                              ? CrossFadeState.showSecond
-                              : CrossFadeState.showFirst,
-                      duration: const Duration(milliseconds: 300),
+        actions:
+            widget.isLocal
+                ? [
+                  // Only show delete button for local notes
+                  IconButton(
+                    icon: const Icon(
+                      CupertinoIcons.delete,
+                      color: Colors.white,
                     ),
+                    onPressed: _deleteNote,
+                  ),
+                ]
+                : null,
+      ),
+      body: BlocConsumer<NoteBloc, NoteState>(
+        listenWhen:
+            (previous, current) =>
+                current is NoteActionSuccess ||
+                current is NoteActionFailure ||
+                (current is LocalNotesLoaded && _isSaving),
+        listener: (context, state) {
+          if (state is NoteActionSuccess) {
+            // Don't navigate back, just show success message
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
+          } else if (state is NoteActionFailure) {
+            setState(() => _isSaving = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.redAccent,
+              ),
+            );
+          } else if (state is LocalNotesLoaded && _isSaving) {
+            // When notes are reloaded after saving, find our updated note
+            final updatedNote = state.notes.firstWhere(
+              (note) => note.id == _currentNote.id,
+              orElse: () => _currentNote,
+            );
+
+            // Update our local state with the updated note
+            setState(() {
+              _currentNote = updatedNote;
+              _isSaving = false;
+              _isEditing = false;
+            });
+          }
+        },
+        buildWhen:
+            (previous, current) =>
+                current is LocalNotesLoaded ||
+                (current is LocalNotesLoading && !_isSaving),
+        builder: (context, state) {
+          if (state is LocalNotesLoading && _isSaving) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(15),
+                  child: AnimatedCrossFade(
+                    firstChild: _buildReadOnly(),
+                    secondChild: _buildEditor(),
+                    crossFadeState:
+                        _isEditing
+                            ? CrossFadeState.showSecond
+                            : CrossFadeState.showFirst,
+                    duration: const Duration(milliseconds: 300),
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
+              ),
+            ],
+          );
+        },
       ),
       floatingActionButton: widget.isLocal ? _buildFab() : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
@@ -135,34 +197,34 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
     return FloatingActionButton(
       backgroundColor: AppTheme.white,
       onPressed: _isEditing ? _saveChanges : _toggleEditMode,
-      child: Icon(_isEditing ? Icons.check : Icons.edit, color: AppTheme.black),
+      child:
+          _isSaving
+              ? const CircularProgressIndicator(color: AppTheme.black)
+              : Icon(
+                _isEditing ? Icons.check : Icons.edit,
+                color: AppTheme.black,
+              ),
     );
   }
 
   Widget _buildReadOnly() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          widget.note.title,
+          _currentNote.title,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: Colors.white,
-            fontSize: 24,
+            fontSize: 23,
             fontWeight: FontWeight.bold,
           ),
         ),
         const SizedBox(height: 16),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.grey.shade800,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          padding: const EdgeInsets.all(16),
-          child: Text(
-            widget.note.body,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
-          ),
+        Text(
+          _currentNote.body,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppTheme.white, fontSize: 20),
         ),
       ],
     );
@@ -173,37 +235,38 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
+          autofocus: true,
           controller: _titleController,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: AppTheme.white,
-            fontSize: 24,
+            fontSize: 23,
             fontWeight: FontWeight.bold,
           ),
           decoration: InputDecoration(
             hintText: 'Title of your note…',
             hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.white54,
-              fontSize: 24,
+              fontSize: 23,
             ),
             border: InputBorder.none,
           ),
         ),
-        const Divider(color: AppTheme.white, thickness: 0.5, endIndent: 250),
+        const Divider(color: AppTheme.white, thickness: 0.5, endIndent: 200),
         TextField(
           controller: _bodyController,
           style: Theme.of(
             context,
-          ).textTheme.bodyMedium?.copyWith(color: AppTheme.white),
+          ).textTheme.bodyMedium?.copyWith(color: AppTheme.white, fontSize: 20),
           maxLines: null,
           decoration: InputDecoration(
             hintText: 'Your full note goes here…',
             labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: AppTheme.white,
-              fontSize: 25,
+              fontSize: 20,
             ),
             hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: AppTheme.white,
-              fontSize: 24,
+              fontSize: 20,
             ),
             border: InputBorder.none,
           ),

@@ -9,6 +9,7 @@ abstract class NoteState extends Equatable {
 
 class NoteInitial extends NoteState {}
 
+// Remote notes states
 class RemoteNotesLoading extends NoteState {}
 
 class RemoteNotesLoaded extends NoteState {
@@ -29,6 +30,7 @@ class RemoteNotesError extends NoteState {
   List<Object> get props => [message];
 }
 
+// Local notes states
 class LocalNotesLoading extends NoteState {}
 
 class LocalNotesLoaded extends NoteState {
@@ -49,6 +51,7 @@ class LocalNotesError extends NoteState {
   List<Object> get props => [message];
 }
 
+// Action states
 class NoteActionSuccess extends NoteState {
   final String message;
 

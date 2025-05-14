@@ -72,54 +72,69 @@ class _AddNoteViewState extends State<AddNoteView> {
       body: _bodyCtrl.text,
     );
     context.read<NoteBloc>().add(AddLocalNote(note));
-    context.read<NoteBloc>().add(LoadLocalNotes());
-    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'Add note',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppTheme.white,
-            fontSize: 25,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: AppTheme.black,
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF121212), Color(0xFF1E1E1E)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [_buildTitleField(), _buildBodyField()],
-          ),
-        ),
-      ),
-      floatingActionButton: ElevatedButton(
-        onPressed: _isSaving ? null : _save,
-        style: ElevatedButton.styleFrom(
-          shape: CircleBorder(),
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-          // primary: Colors.purpleAccent,
-          backgroundColor: AppTheme.white,
-        ),
-        child: Text(
-          '+',
-          style: Theme.of(
+    return BlocListener<NoteBloc, NoteState>(
+      listener: (context, state) {
+        if (state is NoteActionSuccess) {
+          // first reload the list:
+          context.read<NoteBloc>().add(LoadLocalNotes());
+          // then pop back to HomeView
+          Navigator.of(context).pop();
+        }
+        if (state is NoteActionFailure) {
+          setState(() => _isSaving = false);
+          ScaffoldMessenger.of(
             context,
-          ).textTheme.bodyMedium?.copyWith(color: AppTheme.black, fontSize: 35),
+          ).showSnackBar(SnackBar(content: Text(state.message)));
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppTheme.backgroundColor,
+        appBar: AppBar(
+          title: Text(
+            'Add note',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: AppTheme.white,
+              fontSize: 25,
+            ),
+          ),
+          centerTitle: true,
+          backgroundColor: AppTheme.black,
+        ),
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF121212), Color(0xFF1E1E1E)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [_buildTitleField(), _buildBodyField()],
+            ),
+          ),
+        ),
+        floatingActionButton: ElevatedButton(
+          onPressed: _isSaving ? null : _save,
+          style: ElevatedButton.styleFrom(
+            shape: CircleBorder(),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+            // primary: Colors.purpleAccent,
+            backgroundColor: AppTheme.white,
+          ),
+          child: Text(
+            '+',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppTheme.black,
+              fontSize: 35,
+            ),
+          ),
         ),
       ),
     );
