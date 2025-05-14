@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:models/models.dart';
 import 'package:secure_notes/app/theme/app_theme.dart';
+import '../../app/config/utils/random_color_generator.dart';
 import '../bloc/note_bloc.dart';
 import 'add_note_view.dart';
 import 'widgets/custom_error_widget.dart';
@@ -89,27 +90,51 @@ class _HomeViewState extends State<HomeView> {
             child: Column(
               children: [
                 // Search bar
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 8.0,
+                Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    // exactly the same gradient you use in NoteItem:
+                    gradient: LinearGradient(
+                      colors: [
+                        getRandomPastelColor().withOpacity(0.20),
+                        getRandomPastelColor().withOpacity(0.08),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: TextField(
                     controller: _searchController,
                     style: const TextStyle(color: AppTheme.white),
                     decoration: InputDecoration(
                       hintText: 'Search notes',
-                      hintStyle: const TextStyle(color: Colors.white54),
+                      hintStyle: Theme.of(context).textTheme.bodyMedium
+                          ?.copyWith(color: Colors.white54, fontSize: 17),
                       prefixIcon: const Icon(
                         Icons.search,
                         color: Colors.white54,
                       ),
-                      filled: true,
-                      fillColor: Colors.grey[800],
+                      // turn off the default fill so your gradient shows
+                      filled: false,
+                      // make the TextField itself seamless
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
+                      // tighten up the padding so text lines up nicely
+                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                   ),
                 ),
