@@ -55,11 +55,9 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     AddLocalNote event,
     Emitter<NoteState> emit,
   ) async {
-    emit(LocalNotesLoading());
     try {
       await localNotesDataSrc.addNote(event.note);
-      final notes = await localNotesDataSrc.getNotes();
-      emit(LocalNotesLoaded(notes));
+      // Only emit a single success state, don't try to load notes here
       emit(NoteActionSuccess('Note added successfully'));
     } catch (e) {
       emit(NoteActionFailure('Failed to add note: $e'));

@@ -28,14 +28,14 @@ class DioClientHandler {
 
     // ─── PROXY HOOK ─────────────────────────────────────────────────────────────
     // This will make every Dio HTTP call go through your local proxy.
-    (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (
-      HttpClient client,
-    ) {
-      client.findProxy = (Uri uri) {
-        return "PROXY 127.0.0.1:10809";
-      };
-      return client;
-    };
+    // (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (
+    //   HttpClient client,
+    // ) {
+    //   client.findProxy = (Uri uri) {
+    //     return "PROXY 127.0.0.1:10809";
+    //   };
+    //   return client;
+    // };
     // ────────────────────────────────────────────────────────────────────────────
 
     dio.interceptors.add(

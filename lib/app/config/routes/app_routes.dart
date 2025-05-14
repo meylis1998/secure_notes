@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:secure_notes/home/view/add_note_view.dart';
 
 import '../../../home/view/home_view.dart';
 import '../../../splash/splash_view.dart';
@@ -7,11 +8,9 @@ import '../../../splash/splash_view.dart';
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 class AppRoutes {
-  // Top-level routes
   static const initial = '/';
-  // Bottom Navigation routes
   static const home = '/home';
-  static const local = '/local';
+  static const addNote = '/add_note';
 
   static final GoRoute splashRoute = GoRoute(
     path: initial,
@@ -23,9 +22,14 @@ class AppRoutes {
     builder: (context, state) => const HomeView(),
   );
 
+  static final GoRoute _add_note = GoRoute(
+    path: addNote,
+    builder: (context, state) => const AddNoteView(),
+  );
+
   static final GoRouter router = GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: initial,
-    routes: [splashRoute, _home],
+    routes: [splashRoute, _home, _add_note],
   );
 }

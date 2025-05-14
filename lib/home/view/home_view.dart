@@ -41,10 +41,24 @@ class _HomeViewState extends State<HomeView> {
     super.dispose();
   }
 
-  void _navigateToAddNote() {
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (_) => const AddNoteView()))
-        .then((_) => context.read<NoteBloc>().add(LoadLocalNotes()));
+  void _navigateToAddNote() async {
+    try {
+      final bool? noteAdded = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(builder: (context) => const AddNoteView()),
+      );
+
+      // Only reload notes if a note was actually added
+      if (mounted && noteAdded == true) {
+        // Add a small delay to allow Android to complete navigation
+        Future.delayed(Duration(milliseconds: 100), () {
+          if (mounted) {
+            context.read<NoteBloc>().add(LoadLocalNotes());
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Navigation error: $e');
+    }
   }
 
   void _onNavTapped(int index) {
