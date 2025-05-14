@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:notes_data_src/notes_data_src.dart';
+import 'package:secure_notes/app/config/utils/secure_storage_helper.dart';
 import '../../di/di.dart';
 import '../../home/bloc/note_bloc.dart';
 import '../config/config.dart';
@@ -21,6 +22,9 @@ class SecureNotesApp extends StatelessWidget {
               (context) => NotesRemoteDataSrc(
                 dioClientHandler: injector<DioClientHandler>(),
               ),
+        ),
+        RepositoryProvider<SecureStorageHelper>(
+          create: (context) => injector<SecureStorageHelper>(),
         ),
         RepositoryProvider<LocalNotesDataSrc>(
           create: (context) => injector<LocalNotesDataSrc>(),

@@ -58,6 +58,8 @@ Secure storage for encryption key using flutter_secure_storage
         Android: flutter run or via Android Studio
 
         iOS: flutter run (requires a connected iOS device or simulator)
+
+```text
 secure_notes/
 ├── android/
 ├── assets/
@@ -91,6 +93,7 @@ secure_notes/
 ├── test/
 ├── pubspec.yaml
 └── README.md
+```
 
 4. Architecture & Design
     4.1. Modular Packages
@@ -103,7 +106,6 @@ secure_notes/
         secure_storage_helper: Manages secure storage of the encryption key using flutter_secure_storage.
 
     4.2. Dependency Injection
-
         Implemented in lib/di/di.dart using GetIt:
         final injector = GetIt.instance;
 
@@ -124,21 +126,14 @@ secure_notes/
         }
 
     4.3. State Management
-
     flutter_bloc: For UI-driven state
-
     hydrated_bloc: Persists BLoC state across restarts
-
     BLoCs are organized under feature folders (e.g., home/bloc).
 
     4.4. Data Flow
-
     On startup: bootstrap.dart calls initServices(), then runs App().
-
     Remote fetch: HomeBloc uses NotesRemoteDataSrc to load notes.
-
     Local persistence: New notes are saved via LocalNotesHive, encrypted by EncryptionService.
-
     UI: Flutter widgets subscribe to BLoC states and display lists or forms.
 
 5. Core Features
@@ -174,7 +169,6 @@ secure_notes/
     7.1. Models
     Data model for notes, supporting both JSON serialization and Hive storage:
         import 'package:hive/hive.dart';
-
         part 'note.g.dart';
 
         @HiveType(typeId: 0)
@@ -206,7 +200,6 @@ secure_notes/
             body: body ?? this.body,
             );
         }
-
         /// Deserialize a list of notes from JSON
         static List<Note> listFromJson(List<dynamic> list) =>
             list.map((x) => Note.fromJson(x as Map<String, dynamic>)).toList();
@@ -225,7 +218,6 @@ secure_notes/
                 'body': body,
             };
         }
-
     Hive generates the adapter in note.g.dart, providing efficient binary storage and retrieval.
 
     7.2. APIs APIs
@@ -253,6 +245,5 @@ secure_notes/
         Provisioning profiles managed via Xcode
 
 10. Appendices
-
     Dependencies:
         See full list in pubspec.yaml.
