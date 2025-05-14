@@ -20,10 +20,25 @@ class _HomeViewState extends State<HomeView> {
   int _selectedTab = 0;
   final Map<String, Color> _noteColors = {};
 
+  // Search controller and query
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
     context.read<NoteBloc>().add(LoadLocalNotes());
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   void _navigateToAddNote() {
@@ -37,6 +52,8 @@ class _HomeViewState extends State<HomeView> {
     context.read<NoteBloc>().add(
       index == 0 ? LoadLocalNotes() : LoadRemoteNotes(),
     );
+    // Clear search when switching tabs
+    _searchController.clear();
   }
 
   @override
@@ -68,7 +85,39 @@ class _HomeViewState extends State<HomeView> {
               ),
             ),
           ),
-          SafeArea(child: _buildBody()),
+          SafeArea(
+            child: Column(
+              children: [
+                // Search bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    style: const TextStyle(color: AppTheme.white),
+                    decoration: InputDecoration(
+                      hintText: 'Search notes',
+                      hintStyle: const TextStyle(color: Colors.white54),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: Colors.white54,
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[800],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+                // Notes list
+                Expanded(child: _buildBody()),
+              ],
+            ),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -106,78 +155,62 @@ class _HomeViewState extends State<HomeView> {
   Widget _buildBody() {
     return BlocBuilder<NoteBloc, NoteState>(
       builder: (context, state) {
-        // *** LOCAL TAB ***
-        if (_selectedTab == 0) {
-          if (state is LocalNotesLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is LocalNotesError) {
-            return CustomErrorWidget(
-              message: state.message,
-              onRetry: () {
-                context.read<NoteBloc>().add(LoadLocalNotes());
-              },
-            );
-          }
-          if (state is LocalNotesLoaded) {
-            final notes = state.notes;
-            if (notes.isEmpty) {
-              return const Center(
-                child: Text(
-                  'No secure notes yet.',
-                  style: TextStyle(color: Colors.white70),
-                ),
-              );
-            }
-            return ListView.builder(
-              itemCount: notes.length,
-              itemBuilder: (_, i) => _buildNoteItem(notes[i], true),
-            );
-          }
+        final bool isLocalTab = _selectedTab == 0;
+        // Loading
+        if (isLocalTab && state is LocalNotesLoading ||
+            !isLocalTab && state is RemoteNotesLoading) {
+          return const Center(child: CircularProgressIndicator());
         }
-        // *** REMOTE TAB ***
-        else {
-          if (state is RemoteNotesLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is RemoteNotesError) {
-            return CustomErrorWidget(
-              message: 'Failed to load remote notes',
-              onRetry: () {
-                context.read<NoteBloc>().add(LoadRemoteNotes());
-              },
-            );
-          }
-          if (state is RemoteNotesLoaded) {
-            final notes = state.notes;
-            if (notes.isEmpty) {
-              return const Center(
-                child: Text(
-                  'No remote notes available.',
-                  style: TextStyle(color: Colors.white70),
-                ),
-              );
-            }
-            return ListView.builder(
-              itemCount: notes.length,
-              itemBuilder:
-                  (_, i) => NoteItem(
-                    noteColors: _noteColors,
-                    context: context,
-                    note: notes[i],
-                    isLocal: false,
-                  ),
-            );
-          }
+        // Error
+        if (isLocalTab && state is LocalNotesError) {
+          return CustomErrorWidget(
+            message: state.message,
+            onRetry: () => context.read<NoteBloc>().add(LoadLocalNotes()),
+          );
         }
+        if (!isLocalTab && state is RemoteNotesError) {
+          return CustomErrorWidget(
+            message: 'Failed to load remote notes',
+            onRetry: () => context.read<NoteBloc>().add(LoadRemoteNotes()),
+          );
+        }
+        // Loaded
+        if (state is LocalNotesLoaded || state is RemoteNotesLoaded) {
+          final notes =
+              state is LocalNotesLoaded
+                  ? state.notes
+                  : (state as RemoteNotesLoaded).notes;
+          // Filter by search query
+          final filtered =
+              _searchQuery.isEmpty
+                  ? notes
+                  : notes.where((note) {
+                    final q = _searchQuery.toLowerCase();
+                    return note.title.toLowerCase().contains(q) ||
+                        note.title.toLowerCase().contains(q);
+                  }).toList();
 
-        // fallback (e.g. initial)
+          if (filtered.isEmpty) {
+            return const Center(
+              child: Text(
+                'No notes found.',
+                style: TextStyle(color: Colors.white70),
+              ),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: filtered.length,
+            itemBuilder: (ctx, i) => buildNoteItem(filtered[i], isLocalTab),
+          );
+        }
+        // Initial/fallback
         return const SizedBox.shrink();
       },
     );
   }
 
-  Widget _buildNoteItem(Note note, bool isLocal) {
+  Widget buildNoteItem(Note note, bool isLocal) {
     return Slidable(
       key: ValueKey(note.id),
       endActionPane: ActionPane(
@@ -226,9 +259,7 @@ class _HomeViewState extends State<HomeView> {
           actionsAlignment: MainAxisAlignment.center,
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: Text(
                 'CANCEL',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -240,7 +271,6 @@ class _HomeViewState extends State<HomeView> {
             TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-
                 context.read<NoteBloc>().add(DeleteLocalNote(note.id));
               },
               child: Text(
