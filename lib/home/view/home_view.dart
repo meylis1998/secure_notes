@@ -21,7 +21,6 @@ class _HomeViewState extends State<HomeView> {
   int _selectedTab = 0;
   final Map<String, Color> _noteColors = {};
 
-  // Search controller and query
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -96,7 +95,6 @@ class _HomeViewState extends State<HomeView> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    // exactly the same gradient you use in NoteItem:
                     gradient: LinearGradient(
                       colors: [
                         getRandomPastelColor().withOpacity(0.20),
@@ -126,19 +124,16 @@ class _HomeViewState extends State<HomeView> {
                         Icons.search,
                         color: Colors.white54,
                       ),
-                      // turn off the default fill so your gradient shows
+
                       filled: false,
-                      // make the TextField itself seamless
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      // tighten up the padding so text lines up nicely
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                   ),
                 ),
-                // Notes list
                 Expanded(child: _buildBody()),
               ],
             ),
@@ -199,13 +194,13 @@ class _HomeViewState extends State<HomeView> {
             onRetry: () => context.read<NoteBloc>().add(LoadRemoteNotes()),
           );
         }
-        // Loaded
+
         if (state is LocalNotesLoaded || state is RemoteNotesLoaded) {
           final notes =
               state is LocalNotesLoaded
                   ? state.notes
                   : (state as RemoteNotesLoaded).notes;
-          // Filter by search query
+
           final filtered =
               _searchQuery.isEmpty
                   ? notes
@@ -229,7 +224,7 @@ class _HomeViewState extends State<HomeView> {
             itemBuilder: (ctx, i) => buildNoteItem(filtered[i], isLocalTab),
           );
         }
-        // Initial/fallback
+
         return const SizedBox.shrink();
       },
     );

@@ -122,21 +122,10 @@ class _AddNoteViewState extends State<AddNoteView> {
             ),
           ),
         ),
-        floatingActionButton: ElevatedButton(
+        floatingActionButton: FloatingActionButton(
           onPressed: _isSaving ? null : _save,
-          style: ElevatedButton.styleFrom(
-            shape: CircleBorder(),
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-            // primary: Colors.purpleAccent,
-            backgroundColor: AppTheme.white,
-          ),
-          child: Text(
-            '+',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.black,
-              fontSize: 35,
-            ),
-          ),
+          backgroundColor: AppTheme.white,
+          child: const Icon(Icons.add, color: AppTheme.black),
         ),
       ),
     );
