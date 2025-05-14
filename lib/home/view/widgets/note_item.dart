@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:models/models.dart';
 
 import '../../../app/config/utils/random_color_generator.dart';
+import '../../../app/theme/app_theme.dart';
 import '../../bloc/note_bloc.dart';
 import '../note_detail_view.dart';
 
@@ -103,9 +104,10 @@ class NoteItem extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     note.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
+                    overflow: TextOverflow.fade,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.white,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

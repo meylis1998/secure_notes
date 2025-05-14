@@ -20,6 +20,7 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   int _selectedTab = 0;
   final Map<String, Color> _noteColors = {};
+  bool _isGridView = false;
 
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -46,10 +47,7 @@ class _HomeViewState extends State<HomeView> {
       final bool? noteAdded = await Navigator.of(context).push<bool>(
         MaterialPageRoute(builder: (context) => const AddNoteView()),
       );
-
-      // Only reload notes if a note was actually added
       if (mounted && noteAdded == true) {
-        // Add a small delay to allow Android to complete navigation
         Future.delayed(Duration(milliseconds: 100), () {
           if (mounted) {
             context.read<NoteBloc>().add(LoadLocalNotes());
@@ -66,7 +64,6 @@ class _HomeViewState extends State<HomeView> {
     context.read<NoteBloc>().add(
       index == 0 ? LoadLocalNotes() : LoadRemoteNotes(),
     );
-    // Clear search when switching tabs
     _searchController.clear();
   }
 
@@ -87,6 +84,15 @@ class _HomeViewState extends State<HomeView> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(
+              _isGridView ? Icons.view_list_outlined : Icons.grid_view,
+              color: AppTheme.white,
+            ),
+            onPressed: () => setState(() => _isGridView = !_isGridView),
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -102,7 +108,6 @@ class _HomeViewState extends State<HomeView> {
           SafeArea(
             child: Column(
               children: [
-                // Search bar
                 Container(
                   margin: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -129,7 +134,9 @@ class _HomeViewState extends State<HomeView> {
                   ),
                   child: TextField(
                     controller: _searchController,
-                    style: const TextStyle(color: AppTheme.white),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: AppTheme.white),
                     decoration: InputDecoration(
                       hintText: 'Search notes',
                       hintStyle: Theme.of(context).textTheme.bodyMedium
@@ -190,12 +197,12 @@ class _HomeViewState extends State<HomeView> {
     return BlocBuilder<NoteBloc, NoteState>(
       builder: (context, state) {
         final bool isLocalTab = _selectedTab == 0;
-        // Loading
+
         if (isLocalTab && state is LocalNotesLoading ||
             !isLocalTab && state is RemoteNotesLoading) {
           return const Center(child: CircularProgressIndicator());
         }
-        // Error
+
         if (isLocalTab && state is LocalNotesError) {
           return CustomErrorWidget(
             message: state.message,
@@ -221,22 +228,36 @@ class _HomeViewState extends State<HomeView> {
                   : notes.where((note) {
                     final q = _searchQuery.toLowerCase();
                     return note.title.toLowerCase().contains(q) ||
-                        note.title.toLowerCase().contains(q);
+                        note.body.toLowerCase().contains(q);
                   }).toList();
 
           if (filtered.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
                 'No notes found.',
-                style: TextStyle(color: Colors.white70),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
               ),
             );
           }
 
-          return ListView.builder(
-            itemCount: filtered.length,
-            itemBuilder: (ctx, i) => buildNoteItem(filtered[i], isLocalTab),
-          );
+          if (_isGridView) {
+            return GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 2 / 2,
+              ),
+              itemCount: filtered.length,
+              itemBuilder: (ctx, i) => buildNoteItem(filtered[i], isLocalTab),
+            );
+          } else {
+            return ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: filtered.length,
+              itemBuilder: (ctx, i) => buildNoteItem(filtered[i], isLocalTab),
+            );
+          }
         }
 
         return const SizedBox.shrink();
@@ -245,28 +266,35 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Widget buildNoteItem(Note note, bool isLocal) {
-    return Slidable(
-      key: ValueKey(note.id),
-      endActionPane: ActionPane(
-        motion: const ScrollMotion(),
-        children: [
-          SlidableAction(
-            onPressed: (_) => _showDeleteConfirmation(context, note),
-            backgroundColor: AppTheme.red,
-            foregroundColor: AppTheme.white,
-            borderRadius: BorderRadius.circular(10),
-            icon: CupertinoIcons.delete,
-            label: 'Delete',
+    return _selectedTab != 0
+        ? NoteItem(
+          noteColors: _noteColors,
+          context: context,
+          note: note,
+          isLocal: isLocal,
+        )
+        : Slidable(
+          key: ValueKey(note.id),
+          endActionPane: ActionPane(
+            motion: const ScrollMotion(),
+            children: [
+              SlidableAction(
+                onPressed: (_) => _showDeleteConfirmation(context, note),
+                backgroundColor: AppTheme.red,
+                foregroundColor: AppTheme.white,
+                borderRadius: BorderRadius.circular(10),
+                icon: CupertinoIcons.delete,
+                label: 'Delete',
+              ),
+            ],
           ),
-        ],
-      ),
-      child: NoteItem(
-        noteColors: _noteColors,
-        context: context,
-        note: note,
-        isLocal: isLocal,
-      ),
-    );
+          child: NoteItem(
+            noteColors: _noteColors,
+            context: context,
+            note: note,
+            isLocal: isLocal,
+          ),
+        );
   }
 
   void _showDeleteConfirmation(BuildContext context, Note note) {

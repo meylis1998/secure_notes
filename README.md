@@ -6,11 +6,9 @@ App Name: Secure Notes
 
 Version: 1.0.0+1
 
-Flutter SDK: 3.29.2
-
-Dart SDK: 3.7.2
-
-Platforms: iOS, Android (future: Web/Desktop via Flutter)
+[![Flutter Version](https://img.shields.io/badge/flutter-3.29.2-blue)](https://flutter.dev)  
+[![Dart Version](https://img.shields.io/badge/dart-3.7.2-blue)](https://dart.dev)  
+[![Platform](https://img.shields.io/badge/platform-iOS%20|%20Android-lightgrey)]()  
 
 Description: A cross-platform Flutter application enabling users to fetch notes from a remote REST API, add personal notes locally with end-to-end encryption, and view decrypted notes securely. The app uses a modular architecture with separate packages, BLoC for state management, and Hive for encrypted local storage.
 
@@ -60,35 +58,39 @@ Secure storage for encryption key using flutter_secure_storage
         Android: flutter run or via Android Studio
 
         iOS: flutter run (requires a connected iOS device or simulator)
-3. Directory Structure
-        secure_notes/
-    ├── android/
-    ├── assets/
-    │   └── images/
-    ├── build/
-    ├── ios/
-    ├── lib/
-    │   ├── app/
-    │   │   ├── config/       # application-wide configuration and constants
-    │   │   ├── theme/        # color schemes, typography, theming
-    │   │   └── view/         # root-level screens (splash, home, etc.)
-    │   ├── di/               # dependency injection setup (GetIt)
-    │   ├── home/             # feature: Home (bloc + UI)
-    │   │   ├── bloc/
-    │   │   └── view/
-    │   ├── splash/           # splash screen
-    │   ├── widgets/          # reusable custom widgets
-    │   ├── bootstrap.dart    # service initialization entrypoint
-    │   └── main.dart         # application entrypoint
-    ├── packages/             # local Dart packages
-    │   ├── dio_client_handler/
-    │   ├── models/
-    │   ├── notes/            # domain package for notes
-    │   │   └── notes_data_src/
-    │   └── secure_storage_helper/
-    ├── test/                 # unit and widget tests
-    ├── pubspec.yaml          # Flutter/Dart package configuration
-    └── README.md
+secure_notes/
+├── android/
+├── assets/
+│   └── images/
+├── build/
+├── ios/
+├── lib/
+│   ├── app/
+│   │   ├── config/
+│   │   │   ├── constants/
+│   │   │   ├── enums/
+│   │   │   ├── routes/
+│   │   │   └── utils/
+│   │   ├── theme/
+│   │   └── view/
+│   ├── di/
+│   ├── home/
+│   │   ├── bloc/
+│   │   └── view/
+│   │       └── widgets/
+│   ├── splash/
+│   ├── widgets/
+│   ├── bootstrap.dart
+│   └── main.dart
+├── packages/
+│   ├── dio_client_handler/
+│   ├── models/
+│   ├── notes/
+│   │   └── notes_data_src/
+│   └── secure_storage_helper/
+├── test/
+├── pubspec.yaml
+└── README.md
 
 4. Architecture & Design
     4.1. Modular Packages
