@@ -100,7 +100,12 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.transparent,
+
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+
         title: Text(
           'Note details',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -123,70 +128,85 @@ class _NoteDetailsViewState extends State<NoteDetailsView> {
                 ]
                 : null,
       ),
-      body: BlocConsumer<NoteBloc, NoteState>(
-        listenWhen:
-            (previous, current) =>
-                current is NoteActionSuccess ||
-                current is NoteActionFailure ||
-                (current is LocalNotesLoaded && _isSaving),
-        listener: (context, state) {
-          if (state is NoteActionSuccess) {
-            // Don't navigate back, just show success message
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
-          } else if (state is NoteActionFailure) {
-            setState(() => _isSaving = false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.redAccent,
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF1F1F2E), Color(0xFF121214)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-            );
-          } else if (state is LocalNotesLoaded && _isSaving) {
-            // When notes are reloaded after saving, find our updated note
-            final updatedNote = state.notes.firstWhere(
-              (note) => note.id == _currentNote.id,
-              orElse: () => _currentNote,
-            );
+            ),
+          ),
+          SafeArea(
+            child: BlocConsumer<NoteBloc, NoteState>(
+              listenWhen:
+                  (previous, current) =>
+                      current is NoteActionSuccess ||
+                      current is NoteActionFailure ||
+                      (current is LocalNotesLoaded && _isSaving),
+              listener: (context, state) {
+                if (state is NoteActionSuccess) {
+                  // Don't navigate back, just show success message
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(state.message)));
+                } else if (state is NoteActionFailure) {
+                  setState(() => _isSaving = false);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.message),
+                      backgroundColor: Colors.redAccent,
+                    ),
+                  );
+                } else if (state is LocalNotesLoaded && _isSaving) {
+                  // When notes are reloaded after saving, find our updated note
+                  final updatedNote = state.notes.firstWhere(
+                    (note) => note.id == _currentNote.id,
+                    orElse: () => _currentNote,
+                  );
 
-            // Update our local state with the updated note
-            setState(() {
-              _currentNote = updatedNote;
-              _isSaving = false;
-              _isEditing = false;
-            });
-          }
-        },
-        buildWhen:
-            (previous, current) =>
-                current is LocalNotesLoaded ||
-                (current is LocalNotesLoading && !_isSaving),
-        builder: (context, state) {
-          if (state is LocalNotesLoading && _isSaving) {
-            return const Center(child: CircularProgressIndicator());
-          }
+                  // Update our local state with the updated note
+                  setState(() {
+                    _currentNote = updatedNote;
+                    _isSaving = false;
+                    _isEditing = false;
+                  });
+                }
+              },
+              buildWhen:
+                  (previous, current) =>
+                      current is LocalNotesLoaded ||
+                      (current is LocalNotesLoading && !_isSaving),
+              builder: (context, state) {
+                if (state is LocalNotesLoading && _isSaving) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(15),
-                  child: AnimatedCrossFade(
-                    firstChild: _buildReadOnly(),
-                    secondChild: _buildEditor(),
-                    crossFadeState:
-                        _isEditing
-                            ? CrossFadeState.showSecond
-                            : CrossFadeState.showFirst,
-                    duration: const Duration(milliseconds: 300),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(15),
+                        child: AnimatedCrossFade(
+                          firstChild: _buildReadOnly(),
+                          secondChild: _buildEditor(),
+                          crossFadeState:
+                              _isEditing
+                                  ? CrossFadeState.showSecond
+                                  : CrossFadeState.showFirst,
+                          duration: const Duration(milliseconds: 300),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: widget.isLocal ? _buildFab() : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,

@@ -6,6 +6,7 @@ import 'package:models/models.dart';
 import 'package:secure_notes/app/theme/app_theme.dart';
 import '../bloc/note_bloc.dart';
 import 'add_note_view.dart';
+import 'widgets/custom_error_widget.dart';
 import 'widgets/note_item.dart';
 
 class HomeView extends StatefulWidget {
@@ -41,16 +42,15 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 1) Let the gradient paint behind status bar & AppBar:
       extendBodyBehindAppBar: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppTheme.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppTheme.transparent,
         elevation: 0,
         title: Text(
           'Secure Notes',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Colors.white,
+            color: AppTheme.white,
             fontSize: 26,
             fontWeight: FontWeight.bold,
           ),
@@ -76,19 +76,29 @@ class _HomeViewState extends State<HomeView> {
         backgroundColor: AppTheme.white,
         child: const Icon(Icons.add, color: AppTheme.black),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: const Color(0xFF1F1F1F).withOpacity(0.8),
-        currentIndex: _selectedTab,
-        onTap: _onNavTapped,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white54,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.note), label: 'Notes'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.cloud_download),
-            label: 'Remote',
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF1F1F2E), Color(0xFF121214)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-        ],
+        ),
+        child: BottomNavigationBar(
+          backgroundColor: AppTheme.transparent,
+          elevation: 0,
+          currentIndex: _selectedTab,
+          onTap: _onNavTapped,
+          selectedItemColor: AppTheme.white,
+          unselectedItemColor: Colors.white54,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.note), label: 'Notes'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.cloud_download),
+              label: 'Remote',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -96,46 +106,73 @@ class _HomeViewState extends State<HomeView> {
   Widget _buildBody() {
     return BlocBuilder<NoteBloc, NoteState>(
       builder: (context, state) {
-        final notes = <Note>[];
-        var loading = false;
+        // *** LOCAL TAB ***
         if (_selectedTab == 0) {
-          loading = state is LocalNotesLoading;
-          if (state is LocalNotesLoaded) notes.addAll(state.notes);
-        } else {
-          loading = state is RemoteNotesLoading;
-          if (state is RemoteNotesLoaded) notes.addAll(state.notes);
+          if (state is LocalNotesLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (state is LocalNotesError) {
+            return CustomErrorWidget(
+              message: state.message,
+              onRetry: () {
+                context.read<NoteBloc>().add(LoadLocalNotes());
+              },
+            );
+          }
+          if (state is LocalNotesLoaded) {
+            final notes = state.notes;
+            if (notes.isEmpty) {
+              return const Center(
+                child: Text(
+                  'No secure notes yet.',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              );
+            }
+            return ListView.builder(
+              itemCount: notes.length,
+              itemBuilder: (_, i) => _buildNoteItem(notes[i], true),
+            );
+          }
+        }
+        // *** REMOTE TAB ***
+        else {
+          if (state is RemoteNotesLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (state is RemoteNotesError) {
+            return CustomErrorWidget(
+              message: 'Failed to load remote notes',
+              onRetry: () {
+                context.read<NoteBloc>().add(LoadRemoteNotes());
+              },
+            );
+          }
+          if (state is RemoteNotesLoaded) {
+            final notes = state.notes;
+            if (notes.isEmpty) {
+              return const Center(
+                child: Text(
+                  'No remote notes available.',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              );
+            }
+            return ListView.builder(
+              itemCount: notes.length,
+              itemBuilder:
+                  (_, i) => NoteItem(
+                    noteColors: _noteColors,
+                    context: context,
+                    note: notes[i],
+                    isLocal: false,
+                  ),
+            );
+          }
         }
 
-        if (loading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (notes.isEmpty) {
-          return Center(
-            child: Text(
-              _selectedTab == 0
-                  ? 'No secure notes yet.'
-                  : 'No remote notes available.',
-              style: const TextStyle(color: Colors.white70),
-            ),
-          );
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.only(top: 16),
-          itemCount: notes.length,
-          itemBuilder: (_, i) {
-            final note = notes[i];
-            final isLocal = _selectedTab == 0;
-            return isLocal
-                ? _buildNoteItem(note, isLocal)
-                : NoteItem(
-                  noteColors: _noteColors,
-                  context: context,
-                  note: note,
-                  isLocal: isLocal,
-                );
-          },
-        );
+        // fallback (e.g. initial)
+        return const SizedBox.shrink();
       },
     );
   }
@@ -171,28 +208,48 @@ class _HomeViewState extends State<HomeView> {
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           backgroundColor: Colors.grey[900],
-          title: const Text(
+          title: Text(
             'Delete Note',
-            style: TextStyle(color: Colors.white),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppTheme.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
           ),
           content: Text(
             'Are you sure you want to delete "${note.title}"?',
-            style: const TextStyle(color: Colors.white70),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Colors.white70,
+              fontSize: 17,
+            ),
           ),
+          actionsAlignment: MainAxisAlignment.center,
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(dialogContext).pop(); // Close dialog
+                Navigator.of(dialogContext).pop();
               },
-              child: const Text('CANCEL'),
+              child: Text(
+                'CANCEL',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontSize: 15,
+                  color: AppTheme.white,
+                ),
+              ),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(dialogContext).pop(); // Close dialog
-                // Add the delete event
+                Navigator.of(dialogContext).pop();
+
                 context.read<NoteBloc>().add(DeleteLocalNote(note.id));
               },
-              child: const Text('DELETE', style: TextStyle(color: Colors.red)),
+              child: Text(
+                'DELETE',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppTheme.red,
+                  fontSize: 15,
+                ),
+              ),
             ),
           ],
         );

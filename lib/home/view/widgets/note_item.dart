@@ -50,7 +50,6 @@ class NoteItem extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
           child: BackdropFilter(
-            // 4) Frosted-glass blur:
             filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
             child: Container(
               decoration: BoxDecoration(
@@ -78,9 +77,10 @@ class NoteItem extends StatelessWidget {
                     children: [
                       Text(
                         _relativeDate(note),
-                        style: const TextStyle(
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.white70,
-                          fontSize: 12,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -91,7 +91,13 @@ class NoteItem extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       const Spacer(),
-                      const Icon(Icons.edit, color: Colors.white70, size: 18),
+                      isLocal
+                          ? const Icon(
+                            Icons.edit,
+                            color: Colors.white70,
+                            size: 18,
+                          )
+                          : const SizedBox.shrink(),
                     ],
                   ),
                   const SizedBox(height: 8),

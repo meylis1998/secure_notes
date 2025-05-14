@@ -22,7 +22,7 @@ class _AddNoteViewState extends State<AddNoteView> {
       child: TextField(
         controller: _titleCtrl,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Colors.white,
+          color: AppTheme.white,
           fontSize: 24,
           fontWeight: FontWeight.w600,
         ),
@@ -92,7 +92,9 @@ class _AddNoteViewState extends State<AddNoteView> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppTheme.backgroundColor,
+        backgroundColor: AppTheme.transparent,
+        extendBodyBehindAppBar: true,
+
         appBar: AppBar(
           title: Text(
             'Add note',
@@ -103,14 +105,14 @@ class _AddNoteViewState extends State<AddNoteView> {
             ),
           ),
           centerTitle: true,
-          backgroundColor: AppTheme.black,
+          backgroundColor: AppTheme.transparent,
         ),
         body: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF121212), Color(0xFF1E1E1E)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+              colors: [Color(0xFF1F1F2E), Color(0xFF121214)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
           ),
           child: SafeArea(
