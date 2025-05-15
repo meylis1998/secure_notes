@@ -1,9 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
 import 'dart:async';
-import 'dart:io';
-
-import 'package:dio/io.dart';
 import 'package:dio_client_handler/dio_client_handler.dart';
 import 'package:flutter/material.dart';
 

@@ -3,10 +3,10 @@
 <uses-permission android:name="android.permission.USE_FINGERPRINT" />
 <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="secure_notes"
+        android:label="Secure Notes"
         android:name="${applicationName}"
         android:enableOnBackInvokedCallback="true"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
             android:exported="true"
