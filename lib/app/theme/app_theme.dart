@@ -104,10 +104,6 @@ class AppTheme {
       color: AppTheme.black,
       surfaceTintColor: AppTheme.black,
     ),
-    dialogTheme: DialogTheme(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      backgroundColor: AppTheme.black,
-    ),
     iconTheme: IconThemeData(color: AppTheme.white),
     textTheme: TextTheme(
       bodyMedium: GoogleFonts.raleway(color: AppTheme.white),
@@ -159,9 +155,5 @@ class AppTheme {
       ),
     ),
     scaffoldBackgroundColor: AppTheme.black,
-    cardTheme: CardTheme(
-      color: Colors.grey.shade800,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-    ),
   );
 }
